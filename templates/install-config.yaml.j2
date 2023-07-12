@@ -1,0 +1,42 @@
+apiVersion: v1
+metadata:
+  name: {{ cluster.name }}
+baseDomain: {{ cluster.domain }}
+compute:
+  - architecture: amd64
+    hyperthreading: Enabled
+    name: worker
+    replicas: {{ hosts.workers|length }}
+controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
+  name: master
+  replicas: {{ hosts.masters|length }}
+networking:
+  clusterNetwork:
+  - cidr: {{ hosts.common.cluster_network_cidr | default('10.128.0.0/14') }}
+    hostPrefix: {{ hosts.common.cluster_network_host_prefix | default('23') }}
+  machineNetwork:
+  - cidr: {{ hosts.common.machine_network_cidr }}
+  networkType: OVNKubernetes
+  serviceNetwork:
+  - {{ hosts.common.service_network | default('172.30.0.0/16') }}
+platform:
+  baremetal:
+    apiVips:
+    - {{ cluster.apiVIP }}
+    hosts:
+{%- for h in hosts.masters %}    
+    - bootMACAddress: {{ h.mac }}
+      name: {{ h.hostname }}
+      role: master
+{% endfor %}
+{%- for h in hosts.workers %}    
+    - bootMACAddress: {{ h.mac }}
+      name: {{ h.hostname }}
+      role: worker
+{% endfor %}    
+    ingressVips:
+    - {{ cluster.ingressVIP }}
+pullSecret: '{{ environ('pull_secret') }}'
+sshKey: '{{ environ('ssh_key') }}'

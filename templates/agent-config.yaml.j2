@@ -1,0 +1,67 @@
+apiVersion: v1alpha1
+kind: AgentConfig
+metadata:
+  name: {{ cluster.name }}
+rendezvousIP: {{ hosts.masters[0].ip }}
+hosts:
+{%- for h in hosts.masters %}
+  - hostname: {{ h.hostname }}
+    interfaces:
+      - name: {{ h.interface }}
+        macAddress: {{ h.mac }}
+    networkConfig:
+      interfaces:
+        - name: {{ h.interface }}
+          type: ethernet
+          state: up
+          mac-address: {{ h.mac }}
+          ipv4:
+            enabled: true
+            dhcp: false
+            auto-dns: false
+            address:
+            - ip: {{ h.ip }}
+              prefix-length: {{ hosts.common.machine_network_prefix }}
+          ipv6:
+            enabled: false
+      dns-resolver:
+        config:
+          server:
+          - {{ hosts.common.dns }}
+      routes:
+        config:
+        - destination: 0.0.0.0/0
+          next-hop-address: {{ hosts.common.gateway }}
+          next-hop-interface: {{ h.interface }}
+{% endfor %}
+
+{%- for h in hosts.workers %}    
+  - hostname: {{ h.hostname }}
+    interfaces:
+      - name: {{ h.interface }}
+        macAddress: {{ h.mac }}
+    networkConfig:
+      interfaces:
+        - name: {{ h.interface }}
+          type: ethernet
+          state: up
+          mac-address: {{ h.mac }}
+          ipv4:
+            enabled: true
+            dhcp: false
+            auto-dns: false
+            address:
+            - ip: {{ h.ip }}
+              prefix-length: {{ hosts.common.machine_network_prefix }}
+          ipv6:
+            enabled: false
+      dns-resolver:
+        config:
+          server:
+          - {{ hosts.common.dns }}
+      routes:
+        config:
+        - destination: 0.0.0.0/0
+          next-hop-address: {{ hosts.common.gateway }}
+          next-hop-interface: {{ h.interface }}
+{% endfor %}
