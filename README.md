@@ -8,6 +8,7 @@ This repo provides a set of script to deploy a multiple nodes(3+0 or 3+x) OpenSh
 
 ## TODO
 
+- day1 operators
 - vLan support
 - ipv6 support
 - dual stack support

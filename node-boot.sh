@@ -5,6 +5,8 @@ username_password=$2
 iso_image=$3
 kvm_uuid=$4
 
+echo "********************************************************"
+
 if [ ! -z $kvm_uuid ]; then
   system=/redfish/v1/Systems/$kvm_uuid
   manager=/redfish/v1/Managers/$kvm_uuid
@@ -103,7 +105,7 @@ server_set_boot_once_from_cd() {
 
 echo "-------------------------------"
 
-echo "Starting SNO deployment..."
+echo "Starting OpenShift deployment..."
 echo
 server_power_off
 
@@ -131,5 +133,6 @@ echo
 echo "-------------------------------"
 echo "Node is booting from virtual media mounted with $iso_image, check your BMC console to monitor the installation progress."
 echo 
-echo
-echo -n "Node booting."
+
+echo "********************************************************"
+
