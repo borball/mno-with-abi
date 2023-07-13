@@ -17,7 +17,7 @@ hosts:
       enabled: false
       name: ens1f0.58
       id: 58
-    disk: /dev/nvme0n1
+    disk: /dev/vda
   masters:
     - interface: ens1f0
       hostname: master1.compact.outbound.vz.bos2.lab
