@@ -71,4 +71,4 @@ pull_secret: ./pull-secret.json
 ssh_key: /root/.ssh/id_rsa.pub
 
 iso:
-  address: http://192.168.58.15/iso/agent-148.iso
+  address: http://192.168.58.15/iso/compact.iso

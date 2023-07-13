@@ -1,0 +1,14 @@
+.history
+pull-secret.json
+openshift-install
+openshift-install-linux.tar.gz
+sno148
+hub
+sno162
+sno130
+sno132
+sno131
+*.iml
+./extra-manifests
+compact
+testkvm
