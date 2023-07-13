@@ -1,6 +1,6 @@
 #!/bin/bash
 # Helper script to boot the node via redfish API from the ISO image
-# usage: ./sno-install.sh config.yaml
+# usage: ./mno-install.sh config.yaml
 #
 
 if ! type "yq" > /dev/null; then

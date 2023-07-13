@@ -1,7 +1,7 @@
 #!/bin/bash
 # 
 # Helper script to generate bootable ISO with OpenShift agent based installer
-# usage: ./sno-iso.sh -h
+# usage: ./mno-iso.sh -h
 # 
 
 
@@ -27,8 +27,8 @@ warn(){
 usage(){
 	info "Usage: $0 [config file] [ocp version]"
   info "config file and ocp version are optional, examples:"
-  info "- $0 sno130.yaml" " equals: $0 sno130.yaml stable-4.12"
-  info "- $0 sno130.yaml 4.12.10"
+  info "- $0 mno130.yaml" " equals: $0 mno130.yaml stable-4.12"
+  info "- $0 mno130.yaml 4.12.10"
   echo 
   info "Prepare a configuration file by following the example in config.yaml.sample"
   echo "-----------------------------------"
@@ -37,7 +37,7 @@ usage(){
   echo
   echo "-----------------------------------"
   echo
-  info "Example to run it: $0 config-sno130.yaml"
+  info "Example to run it: $0 config-mno130.yaml"
   echo
 }
 
@@ -118,5 +118,5 @@ echo "------------------------------------------------"
 
 echo
 echo "Next step: Go to your BMC console and boot the node from ISO: $cluster_workspace/agent.x86_64.iso."
-echo "You can also run ./sno-install.sh to boot the node from the image automatically if you have a HTTP server serves the image."
+echo "You can also run ./mno-install.sh to boot the node from the image automatically if you have a HTTP server serves the image."
 echo "Enjoy!"
