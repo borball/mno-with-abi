@@ -42,7 +42,7 @@ iso=$(yq '.iso.address' $config_file)
 
 for i in "${!masters_bmc_address[@]}"; do
   echo "$i -> ${masters_bmc_address[$i]} : ${masters_bmc_userpass[$i]} : ${masters_bmc_uuid[$i]} "
-  node-boot.sh ${masters_bmc_address[$i]} ${masters_bmc_userpass[$i]} $iso ${masters_bmc_uuid[$i]}
+  ./node-boot.sh ${masters_bmc_address[$i]} ${masters_bmc_userpass[$i]} $iso ${masters_bmc_uuid[$i]}
 done
 
 
@@ -53,7 +53,7 @@ if [ ! -z "$(yq '.hosts.workers' $config_file)" ]; then
 
   for i in "${!workers_bmc_address[@]}"; do
     echo "$i -> ${workers_bmc_address[$i]} : ${workers_bmc_userpass[$i]}"
-    node-boot.sh ${workers_bmc_address[$i]} ${workers_bmc_userpass[$i]} $iso ${workers_bmc_uuid[$i]}
+    ./node-boot.sh ${workers_bmc_address[$i]} ${workers_bmc_userpass[$i]} $iso ${workers_bmc_uuid[$i]}
   done
 fi
 
