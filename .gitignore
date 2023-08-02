@@ -12,3 +12,4 @@ sno131
 ./extra-manifests
 compact
 testkvm
+*.iml
