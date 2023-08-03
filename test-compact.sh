@@ -23,7 +23,7 @@ cp compact/agent.x86_64.iso /var/www/html/iso/compact.iso
 
 echo "Installation in progress, take a coffee and come back in 30m."
 
-until oc --kubeconfig compact/auth/kubeconfig get clusterversionn | grep -m 1 "Cluster version is"; do sleep 30; done
+until oc --kubeconfig compact/auth/kubeconfig get clusterversion | grep -m 1 "Cluster version is"; do sleep 30; done
 
 echo
 oc get nodes --kubeconfig compact/auth/kubeconfig
