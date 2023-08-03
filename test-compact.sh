@@ -21,8 +21,17 @@ cp compact/agent.x86_64.iso /var/www/html/iso/compact.iso
 
 ./mno-install.sh config-compact.yaml
 
+echo "Installation in progress, take a coffee and come back in 30m."
 
-oc get node --kubeconfig compact/auth/kubeconfig
+until oc --kubeconfig compact/auth/kubeconfig get clusterversionn | grep -m 1 "Cluster version is"; do sleep 30; done
+
+echo
+oc get nodes --kubeconfig compact/auth/kubeconfig
+echo
 oc get clusterversion --kubeconfig compact/auth/kubeconfig
+echo
+oc get co --kubeconfig compact/auth/kubeconfig
+echo
 
-echo "Installation in progress, please check it in 30m."
+
+
