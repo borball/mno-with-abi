@@ -37,44 +37,29 @@ hosts:
     disk: /dev/vda
 
   masters:
-    - interface: ens1f0
-<<<<<<< HEAD
-      hostname: master1.compact.outbound.vz.bos2.lab
+    - hostname: master0.compact.outbound.vz.bos2.lab
+      interface: ens1f0
+      mac: de:ad:be:ff:10:30
       ipv4:
         ip: 192.168.58.30
-=======
-      hostname: master0.compact.outbound.vz.bos2.lab
-      ip: 192.168.58.30
->>>>>>> b679daf6701a0bfec53d7ba4cb619f9e7579a261
-      mac: de:ad:be:ff:10:30
       bmc:
         address: 192.168.58.15:8080
         password: Administrator:dummy
         node_uuid: 22222222-1111-1111-0000-000000000000
-    - interface: ens1f0
-<<<<<<< HEAD
-      hostname: master2.compact.outbound.vz.bos2.lab
+    - hostname: master1.compact.outbound.vz.bos2.lab
+      interface: ens1f0
+      mac: de:ad:be:ff:10:31
       ipv4:
         ip: 192.168.58.31
-=======
-      hostname: master1.compact.outbound.vz.bos2.lab
-      ip: 192.168.58.31
->>>>>>> b679daf6701a0bfec53d7ba4cb619f9e7579a261
-      mac: de:ad:be:ff:10:31
       bmc:
         address: 192.168.58.15:8080
         password: Administrator:dummy
-        node_uuid: 22222222-1111-1111-0000-000000000001        
-    - interface: ens1f0
-<<<<<<< HEAD
-      hostname: master3.compact.outbound.vz.bos2.lab
+        node_uuid: 22222222-1111-1111-0000-000000000001
+    - hostname: master2.compact.outbound.vz.bos2.lab
+      interface: ens1f0
+      mac: de:ad:be:ff:10:32
       ipv4:
         ip: 192.168.58.32
-=======
-      hostname: master2.compact.outbound.vz.bos2.lab
-      ip: 192.168.58.32
->>>>>>> b679daf6701a0bfec53d7ba4cb619f9e7579a261
-      mac: de:ad:be:ff:10:32
       bmc:
         address: 192.168.58.15:8080
         password: Administrator:dummy
