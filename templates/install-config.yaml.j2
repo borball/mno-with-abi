@@ -57,5 +57,11 @@ platform:
       {% for ingressVIP in cluster.ingressVIPs -%}
       - {{ ingressVIP }}
       {% endfor %}
+{% if proxy is defined and proxy.enabled -%}
+proxy:
+  httpProxy: {{ proxy.http }}
+  httpsProxy: {{ proxy.https }}
+  noProxy: {{  proxy.noproxy }}
+{% endif %}
 pullSecret: '{{ environ('pull_secret') }}'
 sshKey: '{{ environ('ssh_key') }}'
