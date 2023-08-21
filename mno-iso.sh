@@ -70,15 +70,27 @@ then
 fi
 
 ocp_release_version=$(curl -s https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/${ocp_release}/release.txt | grep 'Version:' | awk -F ' ' '{print $2}')
+
+#if release not available on mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/, probably ec (early candidate) version.
+if [ -z $ocp_release_version ]; then
+  ocp_release_version=$ocp_release
+fi
+
 ocp_y_release=$(echo $ocp_release_version |cut -d. -f1-2)
 
-echo "You are going to download OpenShift installer ${ocp_release_version}"
+echo "You are going to download OpenShift installer $ocp_release: ${ocp_release_version}"
 
-if [ -f $basedir/openshift-install-linux.tar.gz ]
+if [ -f $basedir/openshift-install-linux.tar.gz ]; then
   rm -f $basedir/openshift-install-linux.tar.gz
-then
+fi
+
+status_code=$(curl -s -o /dev/null -w "%{http_code}" https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/$ocp_release_version/)
+if [ $status_code = "200" ]; then
   curl -L https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/${ocp_release_version}/openshift-install-linux.tar.gz -o $basedir/openshift-install-linux.tar.gz
   tar xfz $basedir/openshift-install-linux.tar.gz openshift-install
+else
+  #fetch from image
+  oc adm release extract --command=openshift-install quay.io/openshift-release-dev/ocp-release:$ocp_release_version-x86_64 --registry-config=$(yq '.pull_secret' $config_file)
 fi
 
 cluster_name=$(yq '.cluster.name' $config_file)
@@ -87,8 +99,68 @@ cluster_workspace=$cluster_name
 mkdir -p $cluster_workspace
 mkdir -p $cluster_workspace/openshift
 
-
 echo
+
+if [ "4.12" = $ocp_y_release ]; then
+  warn "Container runtime crun(4.13+):" "disabled"
+else
+  #4.13+ by default enabled.
+  if [ "false" = "$(yq '.day1.crun' $config_file)" ]; then
+    warn "Container runtime crun(4.13+):" "disabled"
+  else
+    info "Container runtime crun(4.13+):" "enabled"
+    cp $templates/openshift/day1/crun/*.yaml $cluster_workspace/openshift/
+  fi
+fi
+
+if [ "false" = "$(yq '.day1.operators.ptp' $config_file)" ]; then
+  warn "PTP Operator:" "disabled"
+else
+  info "PTP Operator:" "enabled"
+  cp $templates/openshift/day1/ptp/*.yaml $cluster_workspace/openshift/
+fi
+
+if [ "false" = "$(yq '.day1.operators.sriov' $config_file)" ]; then
+  warn "SR-IOV Network Operator:" "disabled"
+else
+  info "SR-IOV Network Operator:" "enabled"
+  cp $templates/openshift/day1/sriov/*.yaml $cluster_workspace/openshift/
+fi
+
+if [ "true" = "$(yq '.day1.operators.rhacm' $config_file)" ]; then
+  info "Red Hat ACM:" "enabled"
+  cp $templates/openshift/day1/rhacm/*.yaml $cluster_workspace/openshift/
+else
+  warn "Red Hat ACM:" "disabled"
+fi
+
+if [ "true" = "$(yq '.day1.operators.gitops' $config_file)" ]; then
+  info "GitOps Operator:" "enabled"
+  cp $templates/openshift/day1/gitops/*.yaml $cluster_workspace/openshift/
+else
+  warn "GitOps Operator:" "disabled"
+fi
+
+if [ "true" = "$(yq '.day1.operators.talm' $config_file)" ]; then
+  info "TALM Operator:" "enabled"
+  cp $templates/openshift/day1/talm/*.yaml $cluster_workspace/openshift/
+else
+  warn "TALM Operator:" "disabled"
+fi
+
+if [ "true" = "$(yq '.day1.operators.mce' $config_file)" ]; then
+  info "MCE Operator:" "enabled"
+  cp $templates/openshift/day1/mce/*.yaml $cluster_workspace/openshift/
+else
+  warn "MCE Operator:" "disabled"
+fi
+
+if [ "true" = "$(yq '.day1.operators.lvm' $config_file)" ]; then
+  info "LVM Storage Operator:" "enabled"
+  cp $templates/openshift/day1/lvm/*.yaml $cluster_workspace/openshift/
+else
+  warn "LVM Storage Operator:" "disabled"
+fi
 
 if [ -d $basedir/extra-manifests ]; then
   echo "Copy customized CRs from extra-manifests folder if present"

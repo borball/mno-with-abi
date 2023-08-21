@@ -2,66 +2,137 @@ apiVersion: v1alpha1
 kind: AgentConfig
 metadata:
   name: {{ cluster.name }}
-rendezvousIP: {{ hosts.masters[0].ip }}
+{% if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled -%}
+rendezvousIP: {{ hosts.masters[0].ipv4.ip }}
+{% else -%}
+rendezvousIP: {{ hosts.masters[0].ipv6.ip }}
+{% endif -%}
 hosts:
-{%- for h in hosts.masters %}
-  - hostname: {{ h.hostname }}
+{% if hosts.workers is defined -%}
+{%- set all_hosts=hosts.masters+hosts.workers -%}
+{% else %}
+{%- set all_hosts=hosts.masters -%}
+{% endif -%}
+{%- for host in all_hosts %}
+  - hostname: {{ host.hostname }}
     interfaces:
-      - name: {{ h.interface }}
-        macAddress: {{ h.mac }}
+      - name: {{ host.interface }}
+        macAddress: {{ host.mac }}
+    rootDeviceHints:
+      deviceName: {{ host.disk or hosts.common.disk }}
     networkConfig:
+      {% if hosts.common.vlan is defined and hosts.common.vlan.enabled -%}
       interfaces:
-        - name: {{ h.interface }}
-          type: ethernet
+        - name: {{ hosts.common.vlan.name }}
+          type: vlan
           state: up
-          mac-address: {{ h.mac }}
+          vlan:
+            base-iface: {{ host.interface }}
+            id: {{ hosts.common.vlan.id }}
+          {% if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled -%}
           ipv4:
             enabled: true
-            dhcp: false
-            auto-dns: false
+            {% if not hosts.common.ipv4.dhcp -%}
             address:
-            - ip: {{ h.ip }}
-              prefix-length: {{ hosts.common.machine_network_prefix }}
+              - ip: {{ host.ipv4.ip }}
+                prefix-length: {{ hosts.common.ipv4.machine_network_prefix }}
+            {% endif -%}
+            dhcp: {{ hosts.common.ipv4.dhcp|lower }}
+          {% else %}
+          ipv4:
+            enabled: false
+          {% endif -%}
+          {% if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled -%}
+          ipv6:
+            enabled: true
+            {% if not hosts.common.ipv6.dhcp -%}
+            address:
+              - ip: {{ host.ipv6.ip }}
+                prefix-length: {{ hosts.common.ipv6.machine_network_prefix }}
+            {% endif -%}
+            dhcp: {{ hosts.common.ipv6.dhcp|lower }}
+          {% else %}
           ipv6:
             enabled: false
+          {% endif %}
       dns-resolver:
         config:
           server:
-          - {{ hosts.common.dns }}
+            {% if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled -%}
+            - {{ hosts.common.ipv4.dns }}
+            {% endif -%}
+            {% if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled -%}
+            - {{ hosts.common.ipv6.dns }}
+            {% endif %}
       routes:
         config:
-        - destination: 0.0.0.0/0
-          next-hop-address: {{ hosts.common.gateway }}
-          next-hop-interface: {{ h.interface }}
-{% endfor %}
+          {% if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled -%}
+          - destination: 0.0.0.0/0
+            next-hop-address: {{ hosts.common.ipv4.gateway }}
+            next-hop-interface: {{ host.common.vlan.name }}
+            table-id: 254
+          {% endif %}
+          {% if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled -%}
+          - destination: ::/0
+            next-hop-address: {{ hosts.common.ipv6.gateway }}
+            next-hop-interface: {{ hosts.common.vlan.name }}
+            table-id: 254
+          {% endif %}
+      {% else -%}
+      interfaces:
+        - name: {{ host.interface }}
+          type: ethernet
+          state: up
+          {% if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled -%}
+          ipv4:
+            enabled: true
+            {% if not hosts.common.ipv4.dhcp -%}
+            address:
+              - ip: {{ host.ipv4.ip }}
+                prefix-length: {{ hosts.common.ipv4.machine_network_prefix }}
+            {% endif -%}
+            dhcp: {{ hosts.common.ipv4.dhcp|lower }}
+          {% else %}
+          ipv4:
+            enabled: false
+          {% endif -%}
+          {% if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled -%}
+          ipv6:
+            enabled: true
+            {% if not hosts.common.ipv6.dhcp -%}
+            address:
+              - ip: {{ host.ipv6.ip }}
+                prefix-length: {{ hosts.common.ipv6.machine_network_prefix }}
+            {% endif -%}
+            dhcp: {{ hosts.common.ipv6.dhcp|lower }}
+          {% else %}
+            ipv6:
+              enabled: false
+          {% endif %}
+      dns-resolver:
+        config:
+          server:
+            {% if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled -%}
+            - {{ hosts.common.ipv4.dns }}
+            {% endif -%}
+            {% if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled -%}
+            - {{ hosts.common.ipv6.dns }}
+            {% endif %}
+      routes:
+        config:
+          {% if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled -%}
+          - destination: 0.0.0.0/0
+            next-hop-address: {{ hosts.common.ipv4.gateway }}
+            next-hop-interface: {{ host.interface }}
+            table-id: 254
+          {% endif -%}
+          {% if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled -%}
+          - destination: ::/0
+            next-hop-address: {{ hosts.common.ipv6.gateway }}
+            next-hop-interface: {{ host.interface }}
+            table-id: 254
+          {% endif -%}
 
-{%- for h in hosts.workers %}    
-  - hostname: {{ h.hostname }}
-    interfaces:
-      - name: {{ h.interface }}
-        macAddress: {{ h.mac }}
-    networkConfig:
-      interfaces:
-        - name: {{ h.interface }}
-          type: ethernet
-          state: up
-          mac-address: {{ h.mac }}
-          ipv4:
-            enabled: true
-            dhcp: false
-            auto-dns: false
-            address:
-            - ip: {{ h.ip }}
-              prefix-length: {{ hosts.common.machine_network_prefix }}
-          ipv6:
-            enabled: false
-      dns-resolver:
-        config:
-          server:
-          - {{ hosts.common.dns }}
-      routes:
-        config:
-        - destination: 0.0.0.0/0
-          next-hop-address: {{ hosts.common.gateway }}
-          next-hop-interface: {{ h.interface }}
+      {% endif -%}
+
 {% endfor %}

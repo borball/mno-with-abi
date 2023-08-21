@@ -1,67 +1,69 @@
 cluster:
   domain: outbound.vz.bos2.lab
   name: compact
-  apiVIP: 192.168.58.90
-  ingressVIP: 192.168.58.91
+  apiVIPs:
+    - 192.168.58.90
+    - 2600:52:7:58::90
+  ingressVIPs:
+    - 192.168.58.91
+    - 2600:52:7:58::91
 
 hosts:
   common:
-    machine_network_cidr: 192.168.58.0/25
-    machine_network_prefix: 25
-    #cluster_network_cidr:
-    #cluster_network_host_prefix:
-    #service_network: 
-    dns: 192.168.58.15
-    gateway: 192.168.58.1
+    ipv4:
+      enabled: true
+      dhcp: false
+      machine_network_cidr: 192.168.58.0/25
+      machine_network_prefix: 25
+      #cluster_network_cidr:
+      #cluster_network_host_prefix:
+      #service_network:
+      dns: 192.168.58.15
+      gateway: 192.168.58.1
+    ipv6:
+      enabled: true
+      dhcp: false
+      machine_network_cidr: 2600:52:7:58::/64
+      machine_network_prefix: 64
+      #cluster_network_cidr:
+      #cluster_network_host_prefix:
+      #service_network:
+      dns: 2600:52:7:58::15
+      gateway: 2600:52:7:58::1
     vlan:
       enabled: false
       name: ens1f0.58
       id: 58
-    disk: /dev/nvme0n1
+    disk: /dev/vda
+
   masters:
     - interface: ens1f0
       hostname: master1.compact.outbound.vz.bos2.lab
-      ip: 192.168.58.30
+      ipv4:
+        ip: 192.168.58.30
       mac: de:ad:be:ff:10:30
       bmc:
         address: 192.168.58.15:8080
-        userpass: Administrator:dummy
+        password: Administrator:dummy
         node_uuid: 22222222-1111-1111-0000-000000000000
     - interface: ens1f0
       hostname: master2.compact.outbound.vz.bos2.lab
-      ip: 192.168.58.31
+      ipv4:
+        ip: 192.168.58.31
       mac: de:ad:be:ff:10:31
       bmc:
         address: 192.168.58.15:8080
-        username: Administrator
-        password: dummy
-        node_uuid: 22222222-1111-1111-0000-000000000001        
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-000000000001
     - interface: ens1f0
       hostname: master3.compact.outbound.vz.bos2.lab
-      ip: 192.168.58.32
+      ipv4:
+        ip: 192.168.58.32
       mac: de:ad:be:ff:10:32
       bmc:
         address: 192.168.58.15:8080
-        username: Administrator
-        password: dummy
+        password: Administrator:dummy
         node_uuid: 22222222-1111-1111-0000-000000000002
-  workers:
-    - interface: ens1f0
-      hostname: worker1.compact.outbound.vz.bos2.lab
-      ip: 192.168.58.33
-      mac: de:ad:be:ff:10:33
-      bmc:
-        address: 192.168.58.15:8080
-        userpass: Administrator:dummy
-        node_uuid: 22222222-1111-1111-0000-000000000003        
-    - interface: ens1f0
-      hostname: worker2.compact.outbound.vz.bos2.lab
-      ip: 192.168.58.34
-      mac: de:ad:be:ff:10:34
-      bmc:
-        address: 192.168.58.15:8080
-        userpass: Administrator:dummy
-        node_uuid: 22222222-1111-1111-0000-000000000004
 
 proxy:
   enabled: false
@@ -69,7 +71,7 @@ proxy:
   https:
   noproxy:
 
-pull_secret: ./pull-secret.json
+pull_secret: /root/pull-secret.json
 ssh_key: /root/.ssh/id_rsa.pub
 
 iso:

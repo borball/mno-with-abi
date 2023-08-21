@@ -14,29 +14,48 @@ controlPlane:
   replicas: {{ hosts.masters|length }}
 networking:
   clusterNetwork:
-  - cidr: {{ hosts.common.cluster_network_cidr | default('10.128.0.0/14') }}
-    hostPrefix: {{ hosts.common.cluster_network_host_prefix | default('23') }}
-  machineNetwork:
-  - cidr: {{ hosts.common.machine_network_cidr }}
-  networkType: OVNKubernetes
+  {% if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled -%}
+  - cidr: {{ hosts.common.ipv4.cluster_network_cidr | default('10.128.0.0/14') }}
+    hostPrefix: {{ hosts.common.ipv4.cluster_network_host_prefix | default('23') }}
+  {% endif -%}
+  {% if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled -%}
+  - cidr: {{ hosts.common.ipv6.cluster_network_cidr | default('fd01::/48') }}
+    hostPrefix: {{ hosts.common.ipv6.cluster_network_host_prefix | default('64') }}
+  {% endif -%}
   serviceNetwork:
-  - {{ hosts.common.service_network | default('172.30.0.0/16') }}
+  {% if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled -%}
+    - {{ hosts.common.ipv4.service_network | default('172.30.0.0/16') }}
+  {% endif -%}
+  {% if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled -%}
+    - {{ hosts.common.ipv6.service_network | default('fd02::/112') }}
+  {% endif -%}
+  machineNetwork:
+  {% if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled -%}
+  - cidr: {{ hosts.common.ipv4.machine_network_cidr }}
+  {% endif -%}
+  {% if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled -%}
+  - cidr: {{ hosts.common.ipv6.machine_network_cidr }}
+  {% endif %}
 platform:
   baremetal:
     apiVips:
-    - {{ cluster.apiVIP }}
+      {% for apiVIP in cluster.apiVIPs -%}
+      - {{ apiVIP }}
+      {% endfor %}
     hosts:
-{%- for h in hosts.masters %}    
+{%- for h in hosts.masters %}
     - bootMACAddress: {{ h.mac }}
       name: {{ h.hostname }}
       role: master
 {% endfor %}
-{%- for h in hosts.workers %}    
+{%- for h in hosts.workers %}
     - bootMACAddress: {{ h.mac }}
       name: {{ h.hostname }}
       role: worker
-{% endfor %}    
+{% endfor %}
     ingressVips:
-    - {{ cluster.ingressVIP }}
+      {% for ingressVIP in cluster.ingressVIPs -%}
+      - {{ ingressVIP }}
+      {% endfor %}
 pullSecret: '{{ environ('pull_secret') }}'
 sshKey: '{{ environ('ssh_key') }}'

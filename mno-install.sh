@@ -36,7 +36,7 @@ fi
 config_file=$1; shift
 cluster_name=$(yq '.cluster.name' $config_file)
 masters_bmc_address=($(yq '.hosts.masters[].bmc.address' $config_file))
-masters_bmc_userpass=($(yq '.hosts.masters[].bmc.userpass' $config_file))
+masters_bmc_userpass=($(yq '.hosts.masters[].bmc.password' $config_file))
 masters_bmc_uuid=($(yq '.hosts.masters[].bmc.node_uuid' $config_file))
 iso=$(yq '.iso.address' $config_file)
 
@@ -48,7 +48,7 @@ done
 
 if [ ! -z "$(yq '.hosts.workers' $config_file)" ]; then
   workers_bmc_address=($(yq '.hosts.workers[].bmc.address // ""' $config_file))
-  workers_bmc_userpass=($(yq '.hosts.workers[].bmc.userpass' $config_file))
+  workers_bmc_userpass=($(yq '.hosts.workers[].bmc.password' $config_file))
   workers_bmc_uuid=($(yq '.hosts.workers[].bmc.node_uuid' $config_file))
 
   for i in "${!workers_bmc_address[@]}"; do
