@@ -113,18 +113,18 @@ else
   fi
 fi
 
-if [ "false" = "$(yq '.day1.operators.ptp' $config_file)" ]; then
-  warn "PTP Operator:" "disabled"
-else
+if [ "true" = "$(yq '.day1.operators.ptp' $config_file)" ]; then
   info "PTP Operator:" "enabled"
   cp $templates/openshift/day1/ptp/*.yaml $cluster_workspace/openshift/
+else
+  warn "PTP Operator:" "disabled"
 fi
 
-if [ "false" = "$(yq '.day1.operators.sriov' $config_file)" ]; then
-  warn "SR-IOV Network Operator:" "disabled"
-else
+if [ "true" = "$(yq '.day1.operators.sriov' $config_file)" ]; then
   info "SR-IOV Network Operator:" "enabled"
   cp $templates/openshift/day1/sriov/*.yaml $cluster_workspace/openshift/
+else
+  warn "SR-IOV Network Operator:" "disabled"
 fi
 
 if [ "true" = "$(yq '.day1.operators.rhacm' $config_file)" ]; then
