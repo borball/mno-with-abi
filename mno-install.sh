@@ -57,10 +57,13 @@ if [ ! -z "$(yq '.hosts.workers' $config_file)" ]; then
   done
 fi
 
-rendezvousIP=$(yq '.hosts.masters[0].ip' $config_file)
 
-assisted_rest=http://$rendezvousIP:8090/api/assisted-install/v2/clusters
-if [ "ipv6" = "$(yq '.host.stack' $config_file)" ]; then
+ipv4_enabled=$(yq '.hosts.common.ipv4.enabled // "" ' $config_file)
+if [ "true" = "$ipv4_enabled" ]; then
+  rendezvousIP=$(yq '.hosts.masters[0].ipv4.ip' $config_file)
+  assisted_rest=http://$rendezvousIP:8090/api/assisted-install/v2/clusters
+else
+  rendezvousIP=$(yq '.hosts.masters[0].ipv6.ip' $config_file)
   assisted_rest=http://[$rendezvousIP]:8090/api/assisted-install/v2/clusters
 fi
 
