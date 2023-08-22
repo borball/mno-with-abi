@@ -65,6 +65,11 @@ hosts:
         password: Administrator:dummy
         node_uuid: 22222222-1111-1111-0000-000000000002
 
+day1:
+  operators:
+    lvm: true
+    mce: true
+
 proxy:
   enabled: false
   http:
