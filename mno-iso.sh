@@ -76,7 +76,7 @@ if [ -z $ocp_release_version ]; then
   ocp_release_version=$ocp_release
 fi
 
-ocp_y_release=$(echo $ocp_release_version |cut -d. -f1-2)
+export ocp_y_release=$(echo $ocp_release_version |cut -d. -f1-2)
 
 echo "You are going to download OpenShift installer $ocp_release: ${ocp_release_version}"
 
@@ -158,6 +158,7 @@ fi
 if [ "true" = "$(yq '.day1.operators.lvm' $config_file)" ]; then
   info "LVM Storage Operator:" "enabled"
   cp $templates/openshift/day1/lvm/*.yaml $cluster_workspace/openshift/
+  jinja2 $templates/openshift/day1/lvm/StorageLVMSubscription.yaml.j2 > $cluster_workspace/openshift/StorageLVMSubscription.yaml
 else
   warn "LVM Storage Operator:" "disabled"
 fi
