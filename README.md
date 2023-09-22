@@ -107,6 +107,12 @@ More supported configuration, please check [config-full.yaml](samples/config-ful
 ./mno-iso.sh config.yaml
 ```
 
+or
+
+```shell
+./mno-iso.sh config.yaml 4.12.30
+```
+
 Copy the ISO into your HTTP server. 
 
 ## OCP installation

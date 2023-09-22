@@ -64,6 +64,16 @@ hosts:
         address: 192.168.58.15:8080
         password: Administrator:dummy
         node_uuid: 22222222-1111-1111-0000-000000000002
+  workers:
+    - hostname: worker0.compact.outbound.vz.bos2.lab
+      interface: ens1f0
+      mac: de:ad:be:ff:10:40
+      ipv4:
+        ip: 192.168.58.40
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0010-000000000000
 
 proxy:
   enabled: false
