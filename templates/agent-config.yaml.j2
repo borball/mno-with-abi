@@ -106,8 +106,8 @@ hosts:
             {% endif -%}
             dhcp: {{ hosts.common.ipv6.dhcp|lower }}
           {% else %}
-            ipv6:
-              enabled: false
+          ipv6:
+            enabled: false
           {% endif %}
       dns-resolver:
         config:
