@@ -8,7 +8,7 @@ spec:
   online: true
   bootMACAddress: de:ad:be:ff:10:40
   bmc:
-    address: redfish+https://192.168.58.15:8000/redfish/v1/Systems/22222222-1111-1111-0000-000000000010
+    address: redfish-virtualmedia://192.168.58.15:8080/redfish/v1/Systems/22222222-1111-1111-0000-000000000010
     credentialsName: worker1-bmc-secret
     disableCertificateVerification: true
     username: admin
