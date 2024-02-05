@@ -1,0 +1,66 @@
+cluster:
+  domain: outbound.vz.bos2.lab
+  name: compact
+  apiVIPs:
+    - 192.168.58.90
+    #- 2600:52:7:58::90
+  ingressVIPs:
+    - 192.168.58.91
+    #- 2600:52:7:58::91
+
+hosts:
+  common:
+    ipv4:
+      enabled: true
+      dhcp: false
+      machine_network_cidr: 192.168.58.0/25
+      machine_network_prefix: 25
+      dns: 192.168.58.15
+      gateway: 192.168.58.1
+    ipv6:
+      enabled: false
+      dhcp: false
+    vlan:
+      enabled: false
+    disk: /dev/vda
+
+  masters:
+    - hostname: master0.compact.outbound.vz.bos2.lab
+      interface: ens1f0
+      mac: de:ad:be:ff:10:30
+      ipv4:
+        ip: 192.168.58.30
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-000000000000
+    - hostname: master1.compact.outbound.vz.bos2.lab
+      interface: ens1f0
+      mac: de:ad:be:ff:10:31
+      ipv4:
+        ip: 192.168.58.31
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-000000000001
+    - hostname: master2.compact.outbound.vz.bos2.lab
+      interface: ens1f0
+      mac: de:ad:be:ff:10:32
+      ipv4:
+        ip: 192.168.58.32
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-000000000002
+
+day1:
+  operators:
+    local_storage: true
+    sriov: true
+    odf: true
+
+pull_secret: /root/pull-secret.json
+ssh_key: /root/.ssh/id_rsa.pub
+
+iso:
+  address: http://192.168.58.15/iso/compact.iso
