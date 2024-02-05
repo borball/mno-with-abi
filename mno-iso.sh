@@ -94,7 +94,7 @@ else
 fi
 
 cluster_name=$(yq '.cluster.name' $config_file)
-cluster_workspace=$cluster_name
+cluster_workspace=$basedir/$cluster_name
 
 mkdir -p $cluster_workspace
 mkdir -p $cluster_workspace/openshift
