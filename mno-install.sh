@@ -33,8 +33,9 @@ then
   exit
 fi
 
+basedir="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+
 config_file=$1; shift
-cluster_name=$(yq '.cluster.name' $config_file)
 total_master=$(yq '.hosts.masters|length' $config_file)
 iso=$(yq '.iso.address' $config_file)
 
@@ -46,9 +47,9 @@ for ((i=0; i<$total_master;i++)); do
   bmc_uuid=$(yq ".hosts.masters[$i].bmc.node_uuid" $config_file)
   echo "Master $i -> ${bmc_address} : ${bmc_userpass} : ${bmc_uuid} "
   if [[ "true" == "${bmc_noproxy}" ]]; then
-    ./node-boot.sh "NOPROXY/${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
+    $basedir/node-boot.sh "NOPROXY/${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
   else
-    ./node-boot.sh "${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
+    $basedir/node-boot.sh "${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
   fi
     
 done
@@ -61,9 +62,9 @@ if [ ! -z "$(yq '.hosts.workers' $config_file)" ]; then
     bmc_uuid=$(yq ".hosts.workers[$i].bmc.node_uuid" $config_file)
     echo "Worker $i -> ${bmc_address} : ${bmc_userpass} : ${bmc_uuid} "
   if [[ "true" == "${bmc_noproxy}" ]]; then
-    ./node-boot.sh "NOPROXY/${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
+    $basedir/node-boot.sh "NOPROXY/${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
   else
-    ./node-boot.sh "${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
+    $basedir/node-boot.sh "${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
   fi
   done
 fi
