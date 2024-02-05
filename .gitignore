@@ -10,6 +10,4 @@ sno132
 sno131
 *.iml
 ./extra-manifests
-compact
-testkvm
 *.iml
