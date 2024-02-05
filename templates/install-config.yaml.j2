@@ -42,17 +42,6 @@ platform:
       {% for apiVIP in cluster.apiVIPs -%}
       - {{ apiVIP }}
       {% endfor %}
-    hosts:
-{%- for h in hosts.masters %}
-    - bootMACAddress: {{ h.mac }}
-      name: {{ h.hostname }}
-      role: master
-{% endfor %}
-{%- for h in hosts.workers %}
-    - bootMACAddress: {{ h.mac }}
-      name: {{ h.hostname }}
-      role: worker
-{% endfor %}
     ingressVips:
       {% for ingressVIP in cluster.ingressVIPs -%}
       - {{ ingressVIP }}
