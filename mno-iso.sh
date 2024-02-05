@@ -155,11 +155,40 @@ else
   warn "MCE Operator:" "disabled"
 fi
 
+if [ "true" = "$(yq '.day1.operators.local_storage' $config_file)" ]; then
+  info "Local Storage Operator:" "enabled"
+  cp $templates/openshift/day1/local-storage/*.yaml $cluster_workspace/openshift/
+else
+  warn "Local Storage Operator:" "disabled"
+fi
+
 if [ "true" = "$(yq '.day1.operators.lvm' $config_file)" ]; then
   info "LVM Storage Operator:" "enabled"
   cp $templates/openshift/day1/lvm/*.yaml $cluster_workspace/openshift/
 else
   warn "LVM Storage Operator:" "disabled"
+fi
+
+if [ "true" = "$(yq '.day1.operators.odf' $config_file)" ]; then
+  info "Storage Foundation Operator:" "enabled"
+  cp $templates/openshift/day1/odf/*.yaml $cluster_workspace/openshift/
+  jinja2 $templates/openshift/day1/odf/StorageFoundationSubscription.yaml.j2 > $cluster_workspace/openshift/StorageFoundationSubscription.yaml
+else
+  warn "Storage Foundation Operator:" "disabled"
+fi
+
+if [ "true" = "$(yq '.day1.operators.nmstate' $config_file)" ]; then
+  info "NMState Operator:" "enabled"
+  cp $templates/openshift/day1/nmstate/*.yaml $cluster_workspace/openshift/
+else
+  warn "NMState Operator:" "disabled"
+fi
+
+if [ "true" = "$(yq '.day1.operators.metallb' $config_file)" ]; then
+  info "MetalLB Operator:" "enabled"
+  cp $templates/openshift/day1/metallb/*.yaml $cluster_workspace/openshift/
+else
+  warn "MetalLB Operator:" "disabled"
 fi
 
 if [ -d $basedir/extra-manifests ]; then
@@ -176,11 +205,14 @@ export ssh_key=$(cat $ssh_key)
 jinja2 $templates/agent-config.yaml.j2 $config_file > $cluster_workspace/agent-config.yaml
 jinja2 $templates/install-config.yaml.j2 $config_file > $cluster_workspace/install-config.yaml
 
+cp $cluster_workspace/agent-config.yaml $cluster_workspace/agent-config.backup.yaml
+cp $cluster_workspace/install-config.yaml $cluster_workspace/install-config.backup.yaml
+
 
 echo
 echo "Generating boot image..."
 echo
-$basedir/openshift-install --dir $cluster_workspace agent create image
+$basedir/openshift-install --dir $cluster_workspace agent --log-level info create image
 
 echo ""
 echo "------------------------------------------------"

@@ -30,6 +30,8 @@ hosts:
       #service_network:
       dns: 2600:52:7:58::15
       gateway: 2600:52:7:58::1
+    bond:
+      mode: 802.3ad
     vlan:
       enabled: false
       name: ens1f0.58
@@ -38,7 +40,13 @@ hosts:
 
   masters:
     - hostname: master0.compact.outbound.vz.bos2.lab
-      interface: ens1f0
+      interface: bond0
+      bond:
+        members:
+          - interface: ens1f0
+            mac: de:ad:be:ff:10:30
+          - interface: ens1f
+            mac: de:ad:be:ff:10:31
       mac: de:ad:be:ff:10:30
       ipv4:
         ip: 192.168.58.30

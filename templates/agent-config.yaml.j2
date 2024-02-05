@@ -15,21 +15,52 @@ hosts:
 {% endif -%}
 {%- for host in all_hosts %}
   - hostname: {{ host.hostname }}
+    {%- if host.hostname in hosts.masters|map(attribute="hostname") %}
+    role: master
+    {%- else %}
+    role: worker
+    {%- endif %}
     interfaces:
+      {%- if host.bond is defined %}
+      {%- for member in host.bond.members %}
+      - name: {{ member.interface }}
+        macAddress: {{ member.mac }}
+      {%- endfor -%}
+      {%- else %}
       - name: {{ host.interface }}
         macAddress: {{ host.mac }}
+      {%- endif %}
     rootDeviceHints:
       deviceName: {{ host.disk or hosts.common.disk }}
     networkConfig:
-      {% if hosts.common.vlan is defined and hosts.common.vlan.enabled -%}
       interfaces:
+        {%- if hosts.common.vlan is defined and hosts.common.vlan.enabled %}
         - name: {{ hosts.common.vlan.name }}
           type: vlan
+        {%- else %}
+        - name: {{ host.interface }}
+          {%- if host.bond is defined %}
+          type: bond
+          link-aggregation:
+            mode: {{ hosts.common.bond.mode }}
+            options:
+               miimon: {{ hosts.common.bond.miimon }}
+            port:
+              {%- for member in host.bond.members %}
+              - {{ member.interface }}
+              {%- endfor %}
+          {%- else %}
+          type: ethernet
+          {%- endif %}
+          mac: {{ host.mac }}
+        {%- endif %}
           state: up
+          {%- if hosts.common.vlan is defined and hosts.common.vlan.enabled %}
           vlan:
             base-iface: {{ host.interface }}
             id: {{ hosts.common.vlan.id }}
-          {% if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled -%}
+          {%- endif %}
+          {%- if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled %}
           ipv4:
             enabled: true
             {% if not hosts.common.ipv4.dhcp -%}
@@ -38,11 +69,11 @@ hosts:
                 prefix-length: {{ hosts.common.ipv4.machine_network_prefix }}
             {% endif -%}
             dhcp: {{ hosts.common.ipv4.dhcp|lower }}
-          {% else %}
+          {%- else %}
           ipv4:
             enabled: false
-          {% endif -%}
-          {% if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled -%}
+          {%- endif -%}
+          {% if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled %}
           ipv6:
             enabled: true
             {% if not hosts.common.ipv6.dhcp -%}
@@ -51,88 +82,73 @@ hosts:
                 prefix-length: {{ hosts.common.ipv6.machine_network_prefix }}
             {% endif -%}
             dhcp: {{ hosts.common.ipv6.dhcp|lower }}
-          {% else %}
+          {%- else %}
           ipv6:
             enabled: false
-          {% endif %}
-      dns-resolver:
-        config:
-          server:
-            {% if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled -%}
-            - {{ hosts.common.ipv4.dns }}
-            {% endif -%}
-            {% if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled -%}
-            - {{ hosts.common.ipv6.dns }}
-            {% endif %}
-      routes:
-        config:
-          {% if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled -%}
-          - destination: 0.0.0.0/0
-            next-hop-address: {{ hosts.common.ipv4.gateway }}
-            next-hop-interface: {{ host.common.vlan.name }}
-            table-id: 254
-          {% endif %}
-          {% if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled -%}
-          - destination: ::/0
-            next-hop-address: {{ hosts.common.ipv6.gateway }}
-            next-hop-interface: {{ hosts.common.vlan.name }}
-            table-id: 254
-          {% endif %}
-      {% else -%}
-      interfaces:
+          {%- endif %}
+        {%- if hosts.common.vlan is defined and hosts.common.vlan.enabled %}
         - name: {{ host.interface }}
+          {% if host.bond is defined -%}
+          type: bond
+          link-aggregation:
+            mode: {{ hosts.common.bond.mode }}
+            options:
+               miimon: {{ hosts.common.bond.miimon }}
+            port:
+              {%- for member in host.bond.members %}
+              - {{ member.interface }}
+              {%- endfor %}
+          {% else -%}
           type: ethernet
+          {%- endif %}
           state: up
-          {% if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled -%}
-          ipv4:
-            enabled: true
-            {% if not hosts.common.ipv4.dhcp -%}
-            address:
-              - ip: {{ host.ipv4.ip }}
-                prefix-length: {{ hosts.common.ipv4.machine_network_prefix }}
-            {% endif -%}
-            dhcp: {{ hosts.common.ipv4.dhcp|lower }}
-          {% else %}
+          mac: {{ host.mac }}
           ipv4:
             enabled: false
-          {% endif -%}
-          {% if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled -%}
-          ipv6:
-            enabled: true
-            {% if not hosts.common.ipv6.dhcp -%}
-            address:
-              - ip: {{ host.ipv6.ip }}
-                prefix-length: {{ hosts.common.ipv6.machine_network_prefix }}
-            {% endif -%}
-            dhcp: {{ hosts.common.ipv6.dhcp|lower }}
-          {% else %}
           ipv6:
             enabled: false
-          {% endif %}
+        {%- endif %}
+        {%- if host.bond is defined -%}
+        {%- for member in host.bond.members %}
+        {%- if member.ethernet is defined %}
+        - name: {{ member.interface }}
+          type: ethernet
+          ethernet:
+            auto-negotiation: {{ member.ethernet.auto_negotiation |lower }}
+            duplex: {{ member.ethernet.duplex }}
+            speed: {{ member.ethernet.speed }}
+        {%- endif %}
+        {%- endfor %}
+        {%- endif %}
       dns-resolver:
         config:
           server:
-            {% if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled -%}
+            {%- if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled %}
             - {{ hosts.common.ipv4.dns }}
-            {% endif -%}
-            {% if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled -%}
+            {%- endif %}
+            {%- if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled %}
             - {{ hosts.common.ipv6.dns }}
-            {% endif %}
+            {%- endif %}
       routes:
         config:
-          {% if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled -%}
+          {%- if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled %}
           - destination: 0.0.0.0/0
             next-hop-address: {{ hosts.common.ipv4.gateway }}
+            {%- if hosts.common.vlan is defined and hosts.common.vlan.enabled %}
+            next-hop-interface: {{ host.common.vlan.name }}
+            {%- else %}
             next-hop-interface: {{ host.interface }}
+            {%- endif %}
             table-id: 254
-          {% endif -%}
-          {% if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled -%}
+          {%- endif -%}
+          {%- if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled %}
           - destination: ::/0
             next-hop-address: {{ hosts.common.ipv6.gateway }}
+            {% if hosts.common.vlan is defined and hosts.common.vlan.enabled -%}
+            next-hop-interface: {{ hosts.common.vlan.name }}
+            {%- else %}
             next-hop-interface: {{ host.interface }}
+            {%- endif %}
             table-id: 254
-          {% endif -%}
-
-      {% endif -%}
-
-{% endfor %}
+          {% endif %}
+{%- endfor %}

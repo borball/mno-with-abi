@@ -35,25 +35,36 @@ fi
 
 config_file=$1; shift
 cluster_name=$(yq '.cluster.name' $config_file)
-masters_bmc_address=($(yq '.hosts.masters[].bmc.address' $config_file))
-masters_bmc_userpass=($(yq '.hosts.masters[].bmc.password' $config_file))
-masters_bmc_uuid=($(yq '.hosts.masters[].bmc.node_uuid' $config_file))
+total_master=$(yq '.hosts.masters|length' $config_file)
 iso=$(yq '.iso.address' $config_file)
 
-for i in "${!masters_bmc_address[@]}"; do
-  echo "$i -> ${masters_bmc_address[$i]} : ${masters_bmc_userpass[$i]} : ${masters_bmc_uuid[$i]} "
-  ./node-boot.sh ${masters_bmc_address[$i]} ${masters_bmc_userpass[$i]} $iso ${masters_bmc_uuid[$i]}
+bmc_noproxy=$(yq ".hosts.common.bmc.bypass_proxy" $config_file)
+
+for ((i=0; i<$total_master;i++)); do
+  bmc_address=$(yq ".hosts.masters[$i].bmc.address" $config_file)
+  bmc_userpass=$(yq ".hosts.masters[$i].bmc.password" $config_file)
+  bmc_uuid=$(yq ".hosts.masters[$i].bmc.node_uuid" $config_file)
+  echo "Master $i -> ${bmc_address} : ${bmc_userpass} : ${bmc_uuid} "
+  if [[ "true" == "${bmc_noproxy}" ]]; then
+    ./node-boot.sh "NOPROXY/${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
+  else
+    ./node-boot.sh "${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
+  fi
+    
 done
 
-
 if [ ! -z "$(yq '.hosts.workers' $config_file)" ]; then
-  workers_bmc_address=($(yq '.hosts.workers[].bmc.address // ""' $config_file))
-  workers_bmc_userpass=($(yq '.hosts.workers[].bmc.password' $config_file))
-  workers_bmc_uuid=($(yq '.hosts.workers[].bmc.node_uuid' $config_file))
-
-  for i in "${!workers_bmc_address[@]}"; do
-    echo "$i -> ${workers_bmc_address[$i]} : ${workers_bmc_userpass[$i]}"
-    ./node-boot.sh ${workers_bmc_address[$i]} ${workers_bmc_userpass[$i]} $iso ${workers_bmc_uuid[$i]}
+  total_worker=$(yq '.hosts.workers|length' $config_file)
+  for ((i=0; i<$total_worker;i++)); do
+    bmc_address=$(yq ".hosts.workers[$i].bmc.address" $config_file)
+    bmc_userpass=$(yq ".hosts.workers[$i].bmc.password" $config_file)
+    bmc_uuid=$(yq ".hosts.workers[$i].bmc.node_uuid" $config_file)
+    echo "Worker $i -> ${bmc_address} : ${bmc_userpass} : ${bmc_uuid} "
+  if [[ "true" == "${bmc_noproxy}" ]]; then
+    ./node-boot.sh "NOPROXY/${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
+  else
+    ./node-boot.sh "${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
+  fi
   done
 fi
 
