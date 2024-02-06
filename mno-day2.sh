@@ -95,7 +95,7 @@ apply_node_labels(){
 
   for ((i=0; i<$total_master;i++)); do
     local node=$(yq ".hosts.masters[$i].hostname" "$config_file")
-    readarray roles < <(yq ".hosts.masters[$i].roles" "$config_file")
+    readarray roles < <(yq ".hosts.masters[$i].roles[]" "$config_file")
     if [[ -n "$roles" ]]; then
       for role in $roles; do
         create_mcp "$role"
@@ -103,7 +103,7 @@ apply_node_labels(){
       done
     fi
 
-    readarray labels < <(yq ".hosts.masters[$i].labels" "$config_file")
+    readarray labels < <(yq ".hosts.masters[$i].labels[]" "$config_file")
     if [[ -n "$labels" ]]; then
       for label in $labels; do
         oc label node $node $label
@@ -114,13 +114,13 @@ apply_node_labels(){
   local total_worker=$(yq '.hosts.workers|length' $config_file)
 
   for ((i=0; i<$total_worker;i++)); do
-    readarray roles < <(yq ".hosts.workers[$i].roles" "$config_file")
+    readarray roles < <(yq ".hosts.workers[$i].roles[]" "$config_file")
     for role in $roles; do
       create_mcp "$role"
       oc label node "$node" "node-role.kubernetes.io/$role"
     done
 
-    readarray labels < <(yq ".hosts.workers[$i].labels" "$config_file")
+    readarray labels < <(yq ".hosts.workers[$i].labels[]" "$config_file")
     if [[ -n "$labels" ]]; then
       for label in $labels; do
         oc label node $node $label
