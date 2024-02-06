@@ -26,6 +26,8 @@ hosts:
 
   masters:
     - hostname: master0.compact.outbound.vz.bos2.lab
+      roles:
+        - infra
       interface: ens1f0
       mac: de:ad:be:ff:10:30
       ipv4:
@@ -35,6 +37,8 @@ hosts:
         password: Administrator:dummy
         node_uuid: 22222222-1111-1111-0000-000000000000
     - hostname: master1.compact.outbound.vz.bos2.lab
+      roles:
+        - infra
       interface: ens1f0
       mac: de:ad:be:ff:10:31
       ipv4:
@@ -44,6 +48,8 @@ hosts:
         password: Administrator:dummy
         node_uuid: 22222222-1111-1111-0000-000000000001
     - hostname: master2.compact.outbound.vz.bos2.lab
+      roles:
+        - infra
       interface: ens1f0
       mac: de:ad:be:ff:10:32
       ipv4:
