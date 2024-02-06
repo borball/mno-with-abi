@@ -99,7 +99,7 @@ apply_node_labels(){
     if [[ -n "$roles" ]]; then
       for role in $roles; do
         create_mcp "$role"
-        oc label node "$node" "node-role.kubernetes.io/$role"
+        oc label node "$node" "node-role.kubernetes.io/$role="
       done
     fi
 
@@ -117,7 +117,7 @@ apply_node_labels(){
     readarray roles < <(yq ".hosts.workers[$i].roles[]" "$config_file")
     for role in $roles; do
       create_mcp "$role"
-      oc label node "$node" "node-role.kubernetes.io/$role"
+      oc label node "$node" "node-role.kubernetes.io/$role="
     done
 
     readarray labels < <(yq ".hosts.workers[$i].labels[]" "$config_file")
