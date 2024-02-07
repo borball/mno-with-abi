@@ -16,7 +16,7 @@ if [[ -z "${OCP_RELEASE}" ]]; then
 fi
 
 OPERATOR_RELEASE=$(echo "${OCP_RELEASE}" |cut -f 1-2 -d .)
-OPERATOR_LIST=("odf-operator" "local-storage-operator" "sriov-network-operator" "kubernetes-nmstate-operator")
+OPERATOR_LIST=("odf-operator" "local-storage-operator" "sriov-network-operator" "kubernetes-nmstate-operator" "sriov-fec")
 
 # build the jq/yq expression to select entry with either name or package in the OPERATOR_LIST
 filter_expression() {
@@ -33,7 +33,6 @@ filter_expression() {
 
 # https://docs.openshift.com/container-platform/4.12/operators/admin/olm-managing-custom-catalogs.html#olm-filtering-fbc_olm-managing-custom-catalogs
 BUILD_DIR=operators/${OPERATOR_RELEASE}
-CATALOG_DIR="${BUILD_DIR}/redhat-operator-index"
 
 cmd=$2
 if [[ -z "$cmd" ]]; then
@@ -49,41 +48,50 @@ if [[ -z "$cmd" ]]; then
   fi
 fi
 
-# see https://docs.openshift.com/container-platform/4.12/cli_reference/opm/cli-opm-install.html
-# https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest-${OPERATOR_RELEASE}/opm-linux.tar.gz
-mkdir -p ${CATALOG_DIR}
-if [[ ! -f "${CATALOG_DIR}.Dockerfile" ]]; then
-  echo "Generator ${CATALOG_DIR}.Dockerfile"
-  # DO NOT USE ORIGINAL OPREATOR INDEX unless we are only adding new operators
-  opm generate dockerfile ${CATALOG_DIR}
+mirrorOperators() {
+  local CATALOG_SRC="$1"
+  local CATALOG_DIR="${BUILD_DIR}/${CATALOG_SRC}"
+  # see https://docs.openshift.com/container-platform/4.12/cli_reference/opm/cli-opm-install.html
+  # https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest-${OPERATOR_RELEASE}/opm-linux.tar.gz
+  mkdir -p "${CATALOG_DIR}"
+  if [[ ! -f "${CATALOG_DIR}.Dockerfile" ]]; then
+    echo "Generator ${CATALOG_DIR}.Dockerfile"
+    # DO NOT USE ORIGINAL OPREATOR INDEX unless we are only adding new operators
+    opm generate dockerfile ${CATALOG_DIR}
+    [[ $? -ne 0 ]] && exit -1
+  fi
+
+  if [[ ! -f "${CATALOG_DIR}.json" ]]; then
+    echo "Extract the index.json from registry.redhat.io/${PRODUCT_REPO}/${CATALOG_SRC}:v${OPERATOR_RELEASE}"
+    opm render registry.redhat.io/${PRODUCT_REPO}/${CATALOG_SRC}:v${OPERATOR_RELEASE} -o json > "${CATALOG_DIR}.json"
+    [[ $? -ne 0 ]] && exit -1
+  fi
+
+  echo "Filter ${CATALOG_DIR}.json"
+  jq -M "$(filter_expression)" "${CATALOG_DIR}.json" > "${CATALOG_DIR}/index.json"
   [[ $? -ne 0 ]] && exit -1
-fi
 
-if [[ ! -f "${CATALOG_DIR}.json" ]]; then
-  echo "Extract the index.json from registry.redhat.io/${PRODUCT_REPO}/redhat-operator-index:v${OPERATOR_RELEASE}"
-  opm render registry.redhat.io/${PRODUCT_REPO}/redhat-operator-index:v${OPERATOR_RELEASE} > ${CATALOG_DIR}.json
+  echo "Validate ${CATALOG_DIR}"
+  opm validate "${CATALOG_DIR}"
   [[ $? -ne 0 ]] && exit -1
-fi
 
-echo "Filter ${CATALOG_DIR}.json"
-jq -M "$(filter_expression)" "${CATALOG_DIR}.json" > ${CATALOG_DIR}/index.json
-[[ $? -ne 0 ]] && exit -1
+  echo "Build container image ${CATALOG_DIR}.Dockerfile"
+  ${cmd} build ${BUILD_DIR} -f ${CATALOG_DIR}.Dockerfile \
+      -t "${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}/${CATALOG_SRC}:v${OPERATOR_RELEASE}"
+  [[ $? -ne 0 ]] && exit -1
 
-echo "Validate ${CATALOG_DIR}"
-opm validate ${CATALOG_DIR}
-[[ $? -ne 0 ]] && exit -1
+  echo "Push container image ${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}/${CATALOG_SRC}:v${OPERATOR_RELEASE}"
+  ${cmd} push ${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}/${CATALOG_SRC}:v${OPERATOR_RELEASE}
+  [[ $? -ne 0 ]] && exit -1
 
-echo "Build container image ${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}/redhat-operator-index:v${OPERATOR_RELEASE}"
-${cmd} build ${BUILD_DIR} -f ${CATALOG_DIR}.Dockerfile \
-    -t ${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}/redhat-operator-index:v${OPERATOR_RELEASE}
-[[ $? -ne 0 ]] && exit -1
+  # mirror based on the pruned index
+  echo "Mirroring operator images from ${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}/${CATALOG_SRC}:v${OPERATOR_RELEASE}"
+  oc adm catalog mirror ${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}/${CATALOG_SRC}:v${OPERATOR_RELEASE} \
+    ${LOCAL_REGISTRY}/${LOCAL_REPOSITORY} \
+    --max-per-registry=2 --request-timeout='1m' \
+    -a ${LOCAL_SECRET_JSON} --index-filter-by-os='linux/amd64' \
+    --continue-on-error=false --dir="${CATALOG_DIR}"
+}
 
-echo "Push container image ${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}/redhat-operator-index:v${OPERATOR_RELEASE}"
-${cmd} push ${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}/redhat-operator-index:v${OPERATOR_RELEASE}
-[[ $? -ne 0 ]] && exit -1
-
-# mirror based on the pruned index
-echo "Mirroring operator images"
-oc adm catalog mirror ${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}/redhat-operator-index:v${OPERATOR_RELEASE} \
-  ${LOCAL_REGISTRY}/${LOCAL_REPOSITORY} \
-  -a ${LOCAL_SECRET_JSON} --index-filter-by-os='linux/amd64'
+mirrorOperators "redhat-operator-index"
+mirrorOperators "certified-operator-index"
