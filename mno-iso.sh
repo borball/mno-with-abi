@@ -111,7 +111,7 @@ enable_crun(){
       warn "Container runtime crun(4.13+):" "disabled"
     else
       info "Container runtime crun(4.13+):" "enabled"
-      cp $templates/openshift/day1/crun/*.yaml $cluster_workspace/openshift/
+      cp $templates/day1/crun/*.yaml $cluster_workspace/openshift/
     fi
   fi
 }
