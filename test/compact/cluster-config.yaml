@@ -65,6 +65,8 @@ day1:
     sriov: true
     odf: true
 
+day2:
+
 pull_secret: /root/pull-secret.json
 ssh_key: /root/.ssh/id_rsa.pub
 

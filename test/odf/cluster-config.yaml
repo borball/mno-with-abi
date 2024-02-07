@@ -1,0 +1,95 @@
+cluster:
+  domain: outbound.vz.bos2.lab
+  name: odf
+  apiVIPs:
+    - 192.168.58.60
+    #- 2600:52:7:58::60
+  ingressVIPs:
+    - 192.168.58.67
+    #- 2600:52:7:58::67
+
+hosts:
+  common:
+    ipv4:
+      enabled: true
+      dhcp: false
+      machine_network_cidr: 192.168.58.0/25
+      machine_network_prefix: 25
+      dns: 192.168.58.15
+      gateway: 192.168.58.1
+    ipv6:
+      enabled: false
+      dhcp: false
+    vlan:
+      enabled: false
+    disk: /dev/vda
+
+  masters:
+    - hostname: master1.odf.outbound.vz.bos2.lab
+      interface: ens1f0
+      mac: de:ad:be:ff:10:61
+      ipv4:
+        ip: 192.168.58.61
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-111100000061
+    - hostname: master2.odf.outbound.vz.bos2.lab
+      interface: ens1f0
+      mac: de:ad:be:ff:10:62
+      ipv4:
+        ip: 192.168.58.62
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-111100000062
+    - hostname: master3.odf.outbound.vz.bos2.lab
+      interface: ens1f0
+      mac: de:ad:be:ff:10:63
+      ipv4:
+        ip: 192.168.58.63
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-111100000063
+    - hostname: worker1.odf.outbound.vz.bos2.lab
+      interface: ens1f0
+      mac: de:ad:be:ff:10:64
+      ipv4:
+        ip: 192.168.58.64
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-111100000064
+    - hostname: worker2.odf.outbound.vz.bos2.lab
+      interface: ens1f0
+      mac: de:ad:be:ff:10:65
+      ipv4:
+        ip: 192.168.58.65
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-111100000065
+    - hostname: worker3.odf.outbound.vz.bos2.lab
+      interface: ens1f0
+      mac: de:ad:be:ff:10:66
+      ipv4:
+        ip: 192.168.58.66
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-111100000066
+
+day1:
+  operators:
+    local-storage: true
+    odf: true
+
+day2:
+
+  
+pull_secret: /root/pull-secret.json
+ssh_key: /root/.ssh/id_rsa.pub
+
+iso:
+  address: http://192.168.58.15/iso/odf.iso
