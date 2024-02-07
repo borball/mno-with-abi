@@ -230,7 +230,7 @@ config_day2_operators() {
           mkdir -p $cluster_workspace/day2/${op_name}
           if [[ "$file" =~ '.yaml.j2' ]]; then
             local yaml_file=${file%".j2"}
-            jinja2 "$manifests/day2/$op_name/$file" "$config_file" > $cluster_workspace/day2/${op_name}/${yaml_file}
+            yq ".operators.$op_name" "$config_file"|jinja2 "$manifests/day2/$op_name/$file" > $cluster_workspace/day2/${op_name}/${yaml_file}
             oc apply -f $cluster_workspace/day2/${op_name}/${yaml_file}
           elif [[ "$file" =~ '.yaml' ]]; then
              cp "$manifests/day2/$op_name/$file" $cluster_workspace/day2/${op_name}/${yaml_file}
