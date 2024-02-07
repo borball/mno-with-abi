@@ -1,0 +1,34 @@
+operators:
+  ptp:
+    name: ptp-operator
+    desc: PTP Operator
+  local-storage:
+    name: local-storage-operator
+    desc: Local Storage Operator
+  rhacm:
+    name: advanced-cluster-management
+    desc: Red Hat Advanced Cluster Management for Kubernetes
+  gitops:
+    name: openshift-gitops-operator
+    desc: Red Hat OpenShift GitOps
+  talm:
+    name: topology-aware-lifecycle-manager
+    desc: Topology Aware Lifecycle Manager
+  sriov:
+    name: sriov-network-operator
+    desc: SR-IOV Network Operator for Openshift
+  lvm:
+    name: lvms-operator
+    desc: Logical volume manager storage
+  mce:
+    name: multicluster-engine
+    desc: Multicluster engine for Kubernetes
+  metallb:
+    name: metallb-operator
+    desc: MetalLB Operator
+  nmstate:
+    name: kubernetes-nmstate-operator
+    state: NMState Operator
+  odf:
+    name: odf-operator
+    desc: OpenShift Data Foundation
