@@ -42,6 +42,7 @@ warn(){
 
 basedir="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 templates=$basedir/templates
+operators=$basedir/operators
 
 config_file=$1;
 
@@ -169,7 +170,7 @@ config_day2_operators() {
     readarray -t keys < <(yq ".day2.operators|keys" $config_file|yq '.[]')
     for ((k=0; k<${#keys[@]}; k++)); do
       op_name="${keys[$k]}"
-      op_desc=$(yq ".operators.$op_name.desc" $templates/operators.yaml)
+      op_desc=$(yq ".operators.$op_name.desc" $operators/operators.yaml)
       if [[ "true" == $(yq ".day1.operators.$op_name" $config_file) ]]; then
         info "$op_desc day2" "enabled"
         mkdir -p $cluster_workspace/day2/
