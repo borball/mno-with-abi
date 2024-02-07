@@ -19,6 +19,6 @@ install_ocp(){
   $install $config
 }
 
-./create-kvms.sh
+$basedir/create-kvms.sh
 
 install_ocp
