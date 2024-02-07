@@ -55,6 +55,7 @@ fi
 
 basedir="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 templates=$basedir/templates
+operators=$basedir/operators
 
 config_file=$1; shift
 ocp_release=$1; shift
@@ -120,7 +121,15 @@ if [[ $(yq '.day1.operators' $config_file) != "null" ]]; then
     desc=$(yq ".operators.$key.desc" $templates/openshift/operators.yaml)
     if [[ "true" == $(yq ".day1.operators.$key" $config_file) ]]; then
       info "$desc" "enabled"
-      cp $templates/openshift/day1/$key/*.yaml $cluster_workspace/openshift/
+      cp $operators/$key/*.yaml $cluster_workspace/openshift/
+
+      #render j2 files
+      j2files=$(ls $operators/$key/*.j2)
+      for f in $j2files; do
+        tname=$(basename $f)
+        fname=${tname//.j2/}
+        jinja2 $f > $cluster_workspace/openshift/$fname
+      done
     else
       warn "$desc" "disabled"
     fi
