@@ -145,10 +145,10 @@ apply_extra_manifests(){
   if [ -d $basedir/extra-manifests ]; then
     echo "Copy customized CRs from extra-manifests folder if present"
     echo "$(ls -l $basedir/extra-manifests/)"
-    cp $basedir/extra-manifests/*.yaml $cluster_workspace/openshift/ 2>/dev/null
+    cp $basedir/extra-manifests/day1/*.yaml $cluster_workspace/openshift/ 2>/dev/null
 
     #render j2 files
-    j2files=$(ls $basedir/extra-manifests/*.j2 2>/dev/null)
+    j2files=$(ls $basedir/extra-manifests/day1/*.j2 2>/dev/null)
     for f in $j2files; do
       tname=$(basename $f)
       fname=${tname//.j2/}
