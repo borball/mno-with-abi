@@ -61,9 +61,11 @@ hosts:
 
 day1:
   operators:
-    local_storage: true
+    local-storage: true
     sriov: true
     odf: true
+
+day2:
 
 pull_secret: /root/pull-secret.json
 ssh_key: /root/.ssh/id_rsa.pub

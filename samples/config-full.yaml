@@ -128,7 +128,7 @@ day1:
   operators:
     ptp: false
     sriov: true
-    local_storage: true
+    local-storage: true
     lvm: false
     odf: true
     rhacm: false
@@ -139,9 +139,62 @@ day1:
     metallb: true
 
 day2:
-  node_labels:
-    enabled: true
+  node_labels_enabled: true
+  disable_operator_auto_upgrade: true
+  mcp:
+    - name: "worker-hp"
+      role: "worker-hp"
+      performance_profile:
+        enabled: true
+        name: performance-profile-worker-hp
+        #manifest can be yaml or j2 template file, find from extra-manifests/day2/performance-profiles/ if a relative path provided
+        manifest: performance-profile-worker-hp.yaml.j2
+        #following are free format, used to build the performance-profile based on the j2 template
+        cpu:
+          isolated: "2-13,16-27,30-41,44-55"
+          reserved: "0,28,1,29,14,42,15,43"
+        hugepages:
+          default: 2M
+          pages:
+            - size: 2M
+              count: 32768
+              #node: 1
+        numa:
+          policy: "single-numa-node"
+  # will find from extra-manifests/performance-profiles/ by default, support yaml files only?
+  performance_profiles:
+    - profile-worker.yaml
+    - profile-others.yaml
+  tuned_profiles:
+    - tuned-worker.yaml
+    - tuned-others.yaml
+  operators:
+    nmstate:
+      desc: "NMState Operator"
+      ## will find yaml or j2 files from extra-manifests/day2/nmstate/* by default if not present
+      #crs: extra-manifests/day2/nmstate/
+      # will find sh files from extra-manifests/day2/nmstate/* by default if not present
+      #scripts: extra-manifests/day2/nmstate/
+    metallb:
+      desc: "MetalLB Operator"
+      ## will find yaml or j2 files from extra-manifests/day2/nmstate/* by default if not present
+      #crs: extra-manifests/day2/metallb/
+      # will find sh files from extra-manifests/day2/metallb/* by default if not present
+      #scripts: extra-manifests/day2/metallb/
+    local-storage:
+      desc: "Local Storage Operator"
+      ## will find yaml or j2 files from extra-manifests/day2/local-storage/* by default if not present
+      #crs: extra-manifests/day2/local-storage/
+      # will find sh files from extra-manifests/day2/local-storage/* by default if not present
+      #scripts: extra-manifests/day2/local-storage/
+    whatever:
+      desc: "Whatever Operator"
+      ## will find yaml or j2 files from extra-manifests/day2/whatever/* by default if not present
+      #crs: extra-manifests/day2/whatever/
+      # will find sh files from extra-manifests/day2/whatever/* by default if not present
+      #scripts: extra-manifests/day2/whatever/
 
+additional_trust_bundle: /root/registry/ca-bundle.crt
 pull_secret: /root/pull-secret.json
 ssh_key: /root/.ssh/id_rsa.pub
 

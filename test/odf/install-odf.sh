@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cluster="compact"
+cluster="odf"
 version=4.12.45
 
 basedir="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"

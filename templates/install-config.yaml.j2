@@ -54,3 +54,8 @@ proxy:
 {% endif %}
 pullSecret: '{{ environ('pull_secret') }}'
 sshKey: '{{ environ('ssh_key') }}'
+
+{% if additional_trust_bundle is defined -%}
+additionalTrustBundle: |
+  {{ environ('additional_trust_bundle') |indent(width=2) }}
+{% endif %}

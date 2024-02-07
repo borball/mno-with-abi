@@ -55,6 +55,7 @@ fi
 
 basedir="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 templates=$basedir/templates
+operators=$basedir/operators
 
 config_file=$1; shift
 ocp_release=$1; shift
@@ -101,113 +102,81 @@ mkdir -p $cluster_workspace/openshift
 
 echo
 
-if [ "4.12" = $ocp_y_release ]; then
-  warn "Container runtime crun(4.13+):" "disabled"
-else
-  #4.13+ by default enabled.
-  if [ "false" = "$(yq '.day1.crun' $config_file)" ]; then
+enable_crun(){
+  if [ "4.12" = $ocp_y_release ]; then
     warn "Container runtime crun(4.13+):" "disabled"
   else
-    info "Container runtime crun(4.13+):" "enabled"
-    cp $templates/openshift/day1/crun/*.yaml $cluster_workspace/openshift/
+    #4.13+ by default enabled.
+    if [ "false" = "$(yq '.day1.crun' $config_file)" ]; then
+      warn "Container runtime crun(4.13+):" "disabled"
+    else
+      info "Container runtime crun(4.13+):" "enabled"
+      cp $templates/day1/crun/*.yaml $cluster_workspace/openshift/
+    fi
   fi
-fi
+}
 
-if [ "true" = "$(yq '.day1.operators.ptp' $config_file)" ]; then
-  info "PTP Operator:" "enabled"
-  cp $templates/openshift/day1/ptp/*.yaml $cluster_workspace/openshift/
-else
-  warn "PTP Operator:" "disabled"
-fi
 
-if [ "true" = "$(yq '.day1.operators.sriov' $config_file)" ]; then
-  info "SR-IOV Network Operator:" "enabled"
-  cp $templates/openshift/day1/sriov/*.yaml $cluster_workspace/openshift/
-else
-  warn "SR-IOV Network Operator:" "disabled"
-fi
+install_operators(){
+  if [[ $(yq '.day1.operators' $config_file) != "null" ]]; then
+    readarray -t keys < <(yq ".day1.operators|keys" $config_file|yq '.[]')
+    for ((k=0; k<${#keys[@]}; k++)); do
+      key="${keys[$k]}"
+      desc=$(yq ".operators.$key.desc" $operators/operators.yaml)
+      if [[ "true" == $(yq ".day1.operators.$key" $config_file) ]]; then
+        info "$desc" "enabled"
+        cp $operators/$key/*.yaml $cluster_workspace/openshift/
 
-if [ "true" = "$(yq '.day1.operators.rhacm' $config_file)" ]; then
-  info "Red Hat ACM:" "enabled"
-  cp $templates/openshift/day1/rhacm/*.yaml $cluster_workspace/openshift/
-else
-  warn "Red Hat ACM:" "disabled"
-fi
+        #render j2 files
+        j2files=$(ls $operators/$key/*.j2 2>/dev/null)
+        for f in $j2files; do
+          tname=$(basename $f)
+          fname=${tname//.j2/}
+          jinja2 $f > $cluster_workspace/openshift/$fname
+        done
+      else
+        warn "$desc" "disabled"
+      fi
+    done
+  fi
+}
 
-if [ "true" = "$(yq '.day1.operators.gitops' $config_file)" ]; then
-  info "GitOps Operator:" "enabled"
-  cp $templates/openshift/day1/gitops/*.yaml $cluster_workspace/openshift/
-else
-  warn "GitOps Operator:" "disabled"
-fi
+apply_extra_manifests(){
+  if [ -d $basedir/extra-manifests ]; then
+    echo "Copy customized CRs from extra-manifests folder if present"
+    echo "$(ls -l $basedir/extra-manifests/)"
+    cp $basedir/extra-manifests/day1/*.yaml $cluster_workspace/openshift/ 2>/dev/null
 
-if [ "true" = "$(yq '.day1.operators.talm' $config_file)" ]; then
-  info "TALM Operator:" "enabled"
-  cp $templates/openshift/day1/talm/*.yaml $cluster_workspace/openshift/
-else
-  warn "TALM Operator:" "disabled"
-fi
+    #render j2 files
+    j2files=$(ls $basedir/extra-manifests/day1/*.j2 2>/dev/null)
+    for f in $j2files; do
+      tname=$(basename $f)
+      fname=${tname//.j2/}
+      jinja2 $f > $cluster_workspace/openshift/$fname
+    done
 
-if [ "true" = "$(yq '.day1.operators.mce' $config_file)" ]; then
-  info "MCE Operator:" "enabled"
-  cp $templates/openshift/day1/mce/*.yaml $cluster_workspace/openshift/
-else
-  warn "MCE Operator:" "disabled"
-fi
+  fi
+}
 
-if [ "true" = "$(yq '.day1.operators.local_storage' $config_file)" ]; then
-  info "Local Storage Operator:" "enabled"
-  cp $templates/openshift/day1/local-storage/*.yaml $cluster_workspace/openshift/
-else
-  warn "Local Storage Operator:" "disabled"
-fi
-
-if [ "true" = "$(yq '.day1.operators.lvm' $config_file)" ]; then
-  info "LVM Storage Operator:" "enabled"
-  cp $templates/openshift/day1/lvm/*.yaml $cluster_workspace/openshift/
-else
-  warn "LVM Storage Operator:" "disabled"
-fi
-
-if [ "true" = "$(yq '.day1.operators.odf' $config_file)" ]; then
-  info "Storage Foundation Operator:" "enabled"
-  cp $templates/openshift/day1/odf/*.yaml $cluster_workspace/openshift/
-  jinja2 $templates/openshift/day1/odf/StorageFoundationSubscription.yaml.j2 > $cluster_workspace/openshift/StorageFoundationSubscription.yaml
-else
-  warn "Storage Foundation Operator:" "disabled"
-fi
-
-if [ "true" = "$(yq '.day1.operators.nmstate' $config_file)" ]; then
-  info "NMState Operator:" "enabled"
-  cp $templates/openshift/day1/nmstate/*.yaml $cluster_workspace/openshift/
-else
-  warn "NMState Operator:" "disabled"
-fi
-
-if [ "true" = "$(yq '.day1.operators.metallb' $config_file)" ]; then
-  info "MetalLB Operator:" "enabled"
-  cp $templates/openshift/day1/metallb/*.yaml $cluster_workspace/openshift/
-else
-  warn "MetalLB Operator:" "disabled"
-fi
-
-if [ -d $basedir/extra-manifests ]; then
-  echo "Copy customized CRs from extra-manifests folder if present"
-  echo "$(ls -l $basedir/extra-manifests/)"
-  cp $basedir/extra-manifests/*.yaml $cluster_workspace/openshift/ 2>/dev/null
-fi
+enable_crun
+install_operators
+apply_extra_manifests
 
 pull_secret=$(yq '.pull_secret' $config_file)
 export pull_secret=$(cat $pull_secret)
 ssh_key=$(yq '.ssh_key' $config_file)
 export ssh_key=$(cat $ssh_key)
 
+bundle_file=$(yq '.additional_trust_bundle' $config_file)
+if [[ "null" != "$bundle_file" ]]; then
+  export additional_trust_bundle=$(cat $bundle_file)
+fi
+
 jinja2 $templates/agent-config.yaml.j2 $config_file > $cluster_workspace/agent-config.yaml
 jinja2 $templates/install-config.yaml.j2 $config_file > $cluster_workspace/install-config.yaml
 
 cp $cluster_workspace/agent-config.yaml $cluster_workspace/agent-config.backup.yaml
 cp $cluster_workspace/install-config.yaml $cluster_workspace/install-config.backup.yaml
-
 
 echo
 echo "Generating boot image..."
