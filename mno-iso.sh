@@ -114,7 +114,7 @@ else
 fi
 
 if [[ $(yq '.day1.operators' $config_file) != "null" ]]; then
-  readarray -t keys < <($(yq ".day1.operators|keys" $config_file))
+  readarray -t keys < <(yq ".day1.operators|keys" $config_file|yq '.[]')
   for ((k=0; k<${#keys[@]}; k++)); do
     key="${keys[$k]}"
     desc=$(yq ".operators.$key.desc" $templates/openshift/operators.yaml)

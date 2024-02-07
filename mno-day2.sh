@@ -166,7 +166,7 @@ disable_operator_auto_upgrade(){
 
 config_day2_operators() {
   if [[ $(yq ".day2.operators" $config_file) != "null" ]]; then
-    readarray -t keys < <($(yq ".day2.operators|keys" $config_file))
+    readarray -t keys < <(yq ".day2.operators|keys" $config_file|yq '.[]')
     for ((k=0; k<${#keys[@]}; k++)); do
       op_name="${keys[$k]}"
       op_desc=$(yq ".operators.$op_name.desc" $templates/openshift/operators.yaml)

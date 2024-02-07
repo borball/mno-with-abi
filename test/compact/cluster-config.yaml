@@ -61,7 +61,7 @@ hosts:
 
 day1:
   operators:
-    local_storage: true
+    local-storage: true
     sriov: true
     odf: true
 
