@@ -41,8 +41,8 @@ warn(){
 }
 
 basedir="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-templates=$basedir/templates
 operators=$basedir/operators
+manifests=$basedir/extra-manifests
 
 config_file=$1;
 
@@ -96,11 +96,45 @@ create_mcps(){
 }
 
 create_performance_profiles(){
-  echo "create_performance_profiles todo:"
+  local total_pp=$(yq ".day2.performance_profiles|length" $config_file)
+
+  for ((i=0; i<$total_pp; i++)); do
+    pp_file=$(yq ".day2.performance_profiles[$i]" "$config_file"|grep -vE '^null$')
+
+    if [[ -n "${pp_file}" ]]; then
+      #absolate path
+      if [[ "$pp_file" = /* ]]; then
+        pp_file_abs=$pp_file
+      else
+        pp_file_abs=$manifests/day2/performance_profiles/$pp_file
+      fi
+      if [ -f  $pp_file_abs ]; then
+        info "create performance profile: $pp_file_abs"
+        oc apply -f $pp_file_abs
+      fi
+    fi
+  done
 }
 
 create_tuned_profiles(){
-  echo "create_tuned_profiles todo:"
+  local total_tuneds=$(yq ".day2.tuned_profiles|length" $config_file)
+
+  for ((i=0; i<$total_tuneds; i++)); do
+    tuned_file=$(yq ".day2.tuned_profiles[$i]" "$config_file"|grep -vE '^null$')
+
+    if [[ -n "${tuned_file}" ]]; then
+      #absolate path
+      if [[ "$tuned_file" = /* ]]; then
+        tuned_file_abs=$tuned_file
+      else
+        tuned_file_abs=$manifests/day2/tuned_profiles/$tuned_file
+      fi
+      if [ -f  $tuned_file_abs ]; then
+        info "create tuned profile: $tuned_file_abs"
+        oc apply -f $tuned_file_abs
+      fi
+    fi
+  done
 }
 
 apply_node_labels(){
@@ -174,17 +208,17 @@ config_day2_operators() {
       if [[ "true" == $(yq ".day1.operators.$op_name" $config_file) ]]; then
         info "$op_desc day2" "enabled"
         mkdir -p $cluster_workspace/day2/
-        readarray -t files < <(find $templates/day2/$op_name/ -type f -printf "%f\n")
+        readarray -t files < <(find $manifests/day2/$op_name/ -type f -printf "%f\n")
         for ((i=0; i<${#files[@]}; i++)); do
           file="${files[$i]}"
-          mkdir -p $cluster_name/day2/${op_name}
+          mkdir -p $cluster_workspace/day2/${op_name}
           if [[ "$file" =~ '.yaml.j2' ]]; then
             local yaml_file=${file%".j2"}
-            jinja2 "$templates/day2/$op_name/$file" "$config_file" > $cluster_name/day2/${op_name}/${yaml_file}
-            oc apply -f $cluster_name/day2/${op_name}/${yaml_file}
+            jinja2 "$manifests/day2/$op_name/$file" "$config_file" > $cluster_workspace/day2/${op_name}/${yaml_file}
+            oc apply -f $cluster_workspace/day2/${op_name}/${yaml_file}
           elif [[ "$file" =~ '.yaml' ]]; then
-             cp "$templates/day2/$op_name/$file" $cluster_name/day2/${op_name}/${yaml_file}
-             oc apply -f "$cluster_name/day2/${op_name}/$file"
+             cp "$manifests/day2/$op_name/$file" $cluster_workspace/day2/${op_name}/${yaml_file}
+             oc apply -f "$cluster_workspace/day2/${op_name}/$file"
           fi
           # todo add .sh and .sh.j2 support
         done
