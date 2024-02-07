@@ -102,45 +102,65 @@ mkdir -p $cluster_workspace/openshift
 
 echo
 
-if [ "4.12" = $ocp_y_release ]; then
-  warn "Container runtime crun(4.13+):" "disabled"
-else
-  #4.13+ by default enabled.
-  if [ "false" = "$(yq '.day1.crun' $config_file)" ]; then
+enable_crun(){
+  if [ "4.12" = $ocp_y_release ]; then
     warn "Container runtime crun(4.13+):" "disabled"
   else
-    info "Container runtime crun(4.13+):" "enabled"
-    cp $templates/openshift/day1/crun/*.yaml $cluster_workspace/openshift/
-  fi
-fi
-
-if [[ $(yq '.day1.operators' $config_file) != "null" ]]; then
-  readarray -t keys < <(yq ".day1.operators|keys" $config_file|yq '.[]')
-  for ((k=0; k<${#keys[@]}; k++)); do
-    key="${keys[$k]}"
-    desc=$(yq ".operators.$key.desc" $operators/operators.yaml)
-    if [[ "true" == $(yq ".day1.operators.$key" $config_file) ]]; then
-      info "$desc" "enabled"
-      cp $operators/$key/*.yaml $cluster_workspace/openshift/
-
-      #render j2 files
-      j2files=$(ls $operators/$key/*.j2 2>/dev/null)
-      for f in $j2files; do
-        tname=$(basename $f)
-        fname=${tname//.j2/}
-        jinja2 $f > $cluster_workspace/openshift/$fname
-      done
+    #4.13+ by default enabled.
+    if [ "false" = "$(yq '.day1.crun' $config_file)" ]; then
+      warn "Container runtime crun(4.13+):" "disabled"
     else
-      warn "$desc" "disabled"
+      info "Container runtime crun(4.13+):" "enabled"
+      cp $templates/openshift/day1/crun/*.yaml $cluster_workspace/openshift/
     fi
-  done
-fi
+  fi
+}
 
-if [ -d $basedir/extra-manifests ]; then
-  echo "Copy customized CRs from extra-manifests folder if present"
-  echo "$(ls -l $basedir/extra-manifests/)"
-  cp $basedir/extra-manifests/*.yaml $cluster_workspace/openshift/ 2>/dev/null
-fi
+
+install_operators(){
+  if [[ $(yq '.day1.operators' $config_file) != "null" ]]; then
+    readarray -t keys < <(yq ".day1.operators|keys" $config_file|yq '.[]')
+    for ((k=0; k<${#keys[@]}; k++)); do
+      key="${keys[$k]}"
+      desc=$(yq ".operators.$key.desc" $operators/operators.yaml)
+      if [[ "true" == $(yq ".day1.operators.$key" $config_file) ]]; then
+        info "$desc" "enabled"
+        cp $operators/$key/*.yaml $cluster_workspace/openshift/
+
+        #render j2 files
+        j2files=$(ls $operators/$key/*.j2 2>/dev/null)
+        for f in $j2files; do
+          tname=$(basename $f)
+          fname=${tname//.j2/}
+          jinja2 $f > $cluster_workspace/openshift/$fname
+        done
+      else
+        warn "$desc" "disabled"
+      fi
+    done
+  fi
+}
+
+apply_extra_manifests(){
+  if [ -d $basedir/extra-manifests ]; then
+    echo "Copy customized CRs from extra-manifests folder if present"
+    echo "$(ls -l $basedir/extra-manifests/)"
+    cp $basedir/extra-manifests/*.yaml $cluster_workspace/openshift/ 2>/dev/null
+
+    #render j2 files
+    j2files=$(ls $basedir/extra-manifests/*.j2 2>/dev/null)
+    for f in $j2files; do
+      tname=$(basename $f)
+      fname=${tname//.j2/}
+      jinja2 $f > $cluster_workspace/openshift/$fname
+    done
+
+  fi
+}
+
+enable_crun
+install_operators
+apply_extra_manifests
 
 pull_secret=$(yq '.pull_secret' $config_file)
 export pull_secret=$(cat $pull_secret)
