@@ -124,7 +124,7 @@ if [[ $(yq '.day1.operators' $config_file) != "null" ]]; then
       cp $operators/$key/*.yaml $cluster_workspace/openshift/
 
       #render j2 files
-      j2files=$(ls $operators/$key/*.j2)
+      j2files=$(ls $operators/$key/*.j2 2>/dev/null)
       for f in $j2files; do
         tname=$(basename $f)
         fname=${tname//.j2/}
