@@ -91,6 +91,22 @@ create_mcps(){
     mcp_role=$(yq ".day2.mcp[$i].role" "$config_file"|grep -vE '^null$')
     if [[ -n "${mcp_name}" ]]; then
       create_mcp "$mcp_name" "$mcp_role"
+
+      #create performance profile for mcp
+      if [[ "true" == $(yq ".day2.mcp[$i].performance_profile.enabled" "$config_file") ]]; then
+        local day2_performance_profiles=$cluster_workspace/day2/performance_profiles
+        mkdir -p $day2_performance_profiles
+        local file=$(yq ".day2.mcp[$i].performance_profile.manifest" "$config_file")
+        if [[ "$file" =~ '.yaml.j2' ]]; then
+          local yaml_file=${file%".j2"}
+          yq ".day2.mcp[$i]" "$config_file"|jinja2 "$manifests/day2/performance_profiles/$file" > $day2_performance_profiles/${yaml_file}
+          oc apply -f $day2_performance_profiles/${yaml_file}
+        elif [[ "$file" =~ '.yaml' ]]; then
+           cp "$manifests/day2/performance_profiles/$file" $day2_performance_profiles/${file}
+           oc apply -f $day2_performance_profiles/${file}
+        fi
+      fi
+
     fi
   done
 }

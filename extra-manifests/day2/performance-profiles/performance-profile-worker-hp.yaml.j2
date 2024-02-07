@@ -1,0 +1,36 @@
+apiVersion: performance.openshift.io/v2
+kind: PerformanceProfile
+metadata:
+  name: {{ performance_profile.name }}
+spec:
+  {% if performance_profile.cpu is defined -%}
+  cpu:
+    isolated: "{{performance_profile.cpu.isolated}}"
+    reserved: "{{performance_profile.cpu.reserved}}"
+  {% else -%}
+  cpu: {}
+  {%- endif %}
+  {% if performance_profile.hugepages is defined -%}
+  hugepages:
+    defaultHugepagesSize: "{{ performance_profile.hugepages.default }}"
+    pages:
+      {%- for page in performance_profile.hugepages.pages %}
+      - size: {{ page.size }}
+        count: {{ page.count }}
+        {% if page.node is defined -%}
+        node: {{ page.node }}
+        {%- endif %}
+      {%- endfor %}
+  {%- else %}
+  hugepages: {}
+  {%- endif %}
+  {% if performance_profile.numa is defined -%}
+  numa:
+    topologyPolicy: {{ performance_profile.numa.policy }}
+  {%- else -%}
+  numa: {}
+  {%- endif %}
+  nodeSelector:
+    node-role.kubernetes.io/{{ role }}: ""
+  machineConfigPoolSelector:
+    pools.operator.machineconfiguration.openshift.io/{{ name }}: ""

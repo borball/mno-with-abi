@@ -144,12 +144,29 @@ day2:
   mcp:
     - name: "worker-hp"
       role: "worker-hp"
-  # will find from extra-manifests/performance-profiles/ by default
+      performance_profile:
+        enabled: true
+        name: performance-profile-worker-hp
+        #manifest can be yaml or j2 template file, find from extra-manifests/day2/performance-profiles/ if a relative path provided
+        manifest: performance-profile-worker-hp.yaml.j2
+        #following are free format, used to build the performance-profile based on the j2 template
+        cpu:
+          isolated: "2-13,16-27,30-41,44-55"
+          reserved: "0,28,1,29,14,42,15,43"
+        hugepages:
+          default: 2M
+          pages:
+            - size: 2M
+              count: 32768
+              #node: 1
+        numa:
+          policy: "single-numa-node"
+  # will find from extra-manifests/performance-profiles/ by default, support yaml files only?
   performance_profiles:
-    - profile-worker-hp.yaml
+    - profile-worker.yaml
     - profile-others.yaml
   tuned_profiles:
-    - tuned-worker-hp.yaml
+    - tuned-worker.yaml
     - tuned-others.yaml
   operators:
     nmstate:
