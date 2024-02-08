@@ -1,6 +1,6 @@
 #!/bin/bash
 # 
-# Helper script to apply the day2 operations on SNO node
+# Helper script to apply the day2 operations
 # Usage: ./mno-day2.sh config.yaml
 #
 
@@ -94,16 +94,19 @@ create_mcps(){
 
       #create performance profile for mcp
       if [[ "true" == $(yq ".day2.mcp[$i].performance_profile.enabled" "$config_file") ]]; then
-        local day2_performance_profiles=$cluster_workspace/day2/performance_profiles
-        mkdir -p $day2_performance_profiles
+        local day2_pp_templates="$manifests"/day2/performance-profiles
+        local day2_pp_workspace="$cluster_workspace"/day2/performance-profiles
+        mkdir -p $day2_pp_workspace
         local file=$(yq ".day2.mcp[$i].performance_profile.manifest" "$config_file")
         if [[ "$file" =~ '.yaml.j2' ]]; then
           local yaml_file=${file%".j2"}
-          yq ".day2.mcp[$i]" "$config_file"|jinja2 "$manifests/day2/performance_profiles/$file" > $day2_performance_profiles/${yaml_file}
-          oc apply -f $day2_performance_profiles/${yaml_file}
+          yq ".day2.mcp[$i]" "$config_file"|jinja2 "$day2_pp_templates/$file" > $day2_pp_workspace/${yaml_file}
+          info "create performance profile: $day2_pp_workspace/${yaml_file}"
+          oc apply -f $day2_pp_workspace/${yaml_file}
         elif [[ "$file" =~ '.yaml' ]]; then
-           cp "$manifests/day2/performance_profiles/$file" $day2_performance_profiles/${file}
-           oc apply -f $day2_performance_profiles/${file}
+           cp "$day2_pp_templates/$file" $day2_pp_workspace/${file}
+           info "create performance profile: $day2_pp_workspace/${file}"
+           oc apply -f $day2_pp_workspace/${file}
         fi
       fi
 

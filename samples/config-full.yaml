@@ -7,6 +7,10 @@ cluster:
   ingressVIPs:
     - 192.168.58.67
     #- 2600:52:7:58::67
+  ntps:
+    - 0.rhel.pool.ntp.org
+    - 1.rhel.pool.ntp.org
+
 hosts:
   common:
     ipv4:

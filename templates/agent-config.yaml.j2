@@ -7,6 +7,12 @@ rendezvousIP: {{ hosts.masters[0].ipv4.ip }}
 {% else -%}
 rendezvousIP: {{ hosts.masters[0].ipv6.ip }}
 {% endif -%}
+{% if cluster.ntps is defined -%}
+additionalNTPSources:
+{% for ntp in cluster.ntps -%}
+- {{ ntp }}
+{% endfor -%}
+{% endif -%}
 hosts:
 {% if hosts.workers is defined -%}
 {%- set all_hosts=hosts.masters+hosts.workers -%}
