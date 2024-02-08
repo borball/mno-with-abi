@@ -48,6 +48,12 @@ config_file=$1;
 
 cluster_name=$(yq '.cluster.name' $config_file)
 cluster_workspace=$cluster_name
+
+day2_pp_templates=$manifests/day2/performance-profiles
+day2_pp_workspace="$cluster_workspace"/day2/performance-profiles
+
+mkdir -p $day2_pp_workspace
+
 export KUBECONFIG=$cluster_workspace/auth/kubeconfig
 
 oc get clusterversion
@@ -94,9 +100,6 @@ create_mcps(){
 
       #create performance profile for mcp
       if [[ "true" == $(yq ".day2.mcp[$i].performance_profile.enabled" "$config_file") ]]; then
-        local day2_pp_templates="$manifests"/day2/performance-profiles
-        local day2_pp_workspace="$cluster_workspace"/day2/performance-profiles
-        mkdir -p $day2_pp_workspace
         local file=$(yq ".day2.mcp[$i].performance_profile.manifest" "$config_file")
         if [[ "$file" =~ '.yaml.j2' ]]; then
           local yaml_file=${file%".j2"}
@@ -116,7 +119,6 @@ create_mcps(){
 
 create_performance_profiles(){
   local total_pp=$(yq ".day2.performance_profiles|length" $config_file)
-
   for ((i=0; i<$total_pp; i++)); do
     pp_file=$(yq ".day2.performance_profiles[$i]" "$config_file"|grep -vE '^null$')
 
@@ -125,11 +127,12 @@ create_performance_profiles(){
       if [[ "$pp_file" = /* ]]; then
         pp_file_abs=$pp_file
       else
-        pp_file_abs=$manifests/day2/performance_profiles/$pp_file
+        pp_file_abs=$manifests/day2/performance-profiles/$pp_file
       fi
       if [ -f  $pp_file_abs ]; then
-        info "create performance profile: $pp_file_abs"
-        oc apply -f $pp_file_abs
+        cp $pp_file_abs $day2_pp_workspace/$pp_file
+        info "create performance profile: $day2_pp_workspace/$pp_file"
+        oc apply -f $$day2_pp_workspace/$pp_file
       fi
     fi
   done
