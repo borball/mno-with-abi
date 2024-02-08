@@ -32,3 +32,6 @@ operators:
   odf:
     name: odf-operator
     desc: OpenShift Data Foundation
+  cluster-logging:
+    name: cluster-logging
+    desc: OpenShift Logging Operator

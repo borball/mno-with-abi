@@ -158,6 +158,9 @@ day1:
     metallb:
       enabled: true
       source: redhat-operators
+    cluster-logging:
+      enabled: false
+      source: redhat-operators
 
 day2:
   node_labels_enabled: true
