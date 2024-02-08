@@ -41,7 +41,7 @@ hosts:
       bypass_proxy: true
 
   masters:
-    - hostname: master1.odf.outbound.vz.bos2.lab
+    - hostname: master1.cluster6.outbound.vz.bos2.lab
       interface: ens1f0
       mac: de:ad:be:ff:10:61
       ipv4:
@@ -50,7 +50,7 @@ hosts:
         address: 192.168.58.15:8080
         password: Administrator:dummy
         node_uuid: 22222222-1111-1111-0000-111100000061
-    - hostname: master2.odf.outbound.vz.bos2.lab
+    - hostname: master2.cluster6.outbound.vz.bos2.lab
       interface: ens1f0
       mac: de:ad:be:ff:10:62
       ipv4:
@@ -59,7 +59,7 @@ hosts:
         address: 192.168.58.15:8080
         password: Administrator:dummy
         node_uuid: 22222222-1111-1111-0000-111100000062
-    - hostname: master3.odf.outbound.vz.bos2.lab
+    - hostname: master3.cluster6.outbound.vz.bos2.lab
       interface: ens1f0
       mac: de:ad:be:ff:10:63
       ipv4:
@@ -69,7 +69,7 @@ hosts:
         password: Administrator:dummy
         node_uuid: 22222222-1111-1111-0000-111100000063
   workers:
-    - hostname: worker1.odf.outbound.vz.bos2.lab
+    - hostname: worker1.cluster6.outbound.vz.bos2.lab
       roles:
         - infra
       labels:
@@ -83,7 +83,7 @@ hosts:
         address: 192.168.58.15:8080
         password: Administrator:dummy
         node_uuid: 22222222-1111-1111-0000-111100000064
-    - hostname: worker2.odf.outbound.vz.bos2.lab
+    - hostname: worker2.cluster6.outbound.vz.bos2.lab
       roles:
         - infra
       labels:
@@ -97,7 +97,7 @@ hosts:
         address: 192.168.58.15:8080
         password: Administrator:dummy
         node_uuid: 22222222-1111-1111-0000-111100000065
-    - hostname: worker3.odf.outbound.vz.bos2.lab
+    - hostname: worker3.cluster6.outbound.vz.bos2.lab
       roles:
         - infra
       labels:
