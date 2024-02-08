@@ -61,9 +61,10 @@ hosts:
 
 day1:
   operators:
-    local-storage: true
-    sriov: true
-    odf: true
+    lvm:
+      enabled: true
+    mce:
+      enabled: true
 
 day2:
 

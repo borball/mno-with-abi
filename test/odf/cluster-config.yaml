@@ -99,15 +99,15 @@ hosts:
 day1:
   operators:
     local-storage:
-      enable: true
+      enabled: true
     odf:
-      enable: true
+      enabled: true
     sriov:
-      enable: true
+      enabled: true
     nmstate:
-      enable: true
+      enabled: true
     metallb:
-      enable: true
+      enabled: true
 
 day2:
   node_labels_enabled: true
