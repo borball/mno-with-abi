@@ -54,6 +54,11 @@ hosts:
         node_uuid: 22222222-1111-1111-0000-111100000063
   workers:
     - hostname: worker1.odf.outbound.vz.bos2.lab
+      roles:
+        - infra
+      labels:
+        # marked for providing disk for ODF deployment
+        - cluster.ocs.openshift.io/openshift-storage=
       interface: ens1f0
       mac: de:ad:be:ff:10:64
       ipv4:
@@ -63,6 +68,11 @@ hosts:
         password: Administrator:dummy
         node_uuid: 22222222-1111-1111-0000-111100000064
     - hostname: worker2.odf.outbound.vz.bos2.lab
+      roles:
+        - infra
+      labels:
+        # marked for providing disk for ODF deployment
+        - cluster.ocs.openshift.io/openshift-storage=
       interface: ens1f0
       mac: de:ad:be:ff:10:65
       ipv4:
@@ -72,6 +82,11 @@ hosts:
         password: Administrator:dummy
         node_uuid: 22222222-1111-1111-0000-111100000065
     - hostname: worker3.odf.outbound.vz.bos2.lab
+      roles:
+        - infra
+      labels:
+        # marked for providing disk for ODF deployment
+        - cluster.ocs.openshift.io/openshift-storage=
       interface: ens1f0
       mac: de:ad:be:ff:10:66
       ipv4:
@@ -83,12 +98,22 @@ hosts:
 
 day1:
   operators:
-    local-storage: true
-    odf: true
+    local-storage:
+      enable: true
+    odf:
+      enable: true
+    sriov:
+      enable: true
+    nmstate:
+      enable: true
+    metallb:
+      enable: true
 
 day2:
+  node_labels_enabled: true
+  disable_operator_auto_upgrade: true
+  operators:
 
-  
 pull_secret: /root/pull-secret.json
 ssh_key: /root/.ssh/id_rsa.pub
 
