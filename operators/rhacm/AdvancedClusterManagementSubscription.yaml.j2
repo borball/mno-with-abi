@@ -7,5 +7,9 @@ metadata:
 spec:
   installPlanApproval: Automatic
   name: advanced-cluster-management
+  {% if source is defined -%}
+  source: {{ source }}
+  {% else -%}
   source: redhat-operators
+  {%- endif %}
   sourceNamespace: openshift-marketplace

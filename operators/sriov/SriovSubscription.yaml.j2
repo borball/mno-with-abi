@@ -6,7 +6,11 @@ metadata:
 spec:
   channel: "stable"
   name: sriov-network-operator
+  {% if source is defined -%}
+  source: {{ source }}
+  {% else -%}
   source: redhat-operators
+  {%- endif %}
   sourceNamespace: openshift-marketplace
   installPlanApproval: Automatic
 

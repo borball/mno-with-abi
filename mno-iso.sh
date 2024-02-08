@@ -123,7 +123,7 @@ install_operators(){
     for ((k=0; k<${#keys[@]}; k++)); do
       key="${keys[$k]}"
       desc=$(yq ".operators.$key.desc" $operators/operators.yaml)
-      if [[ "true" == $(yq ".day1.operators.$key" $config_file) ]]; then
+      if [[ "true" == $(yq ".day1.operators.$key.enable" $config_file) ]]; then
         info "$desc" "enabled"
         cp $operators/$key/*.yaml $cluster_workspace/openshift/
 
@@ -132,7 +132,7 @@ install_operators(){
         for f in $j2files; do
           tname=$(basename $f)
           fname=${tname//.j2/}
-          jinja2 $f > $cluster_workspace/openshift/$fname
+          yq ".day1.operators.$key" $config_file| jinja2 $f > $cluster_workspace/openshift/$fname
         done
       else
         warn "$desc" "disabled"
@@ -144,7 +144,7 @@ install_operators(){
 apply_extra_manifests(){
   if [ -d $basedir/extra-manifests ]; then
     echo "Copy customized CRs from extra-manifests folder if present"
-    echo "$(ls -l $basedir/extra-manifests/)"
+    find $basedir/extra-manifests/day1/ -type f \( -name "*.yaml" -o -name "*.yaml.j2" \) -printf ' - %P\n'
     cp $basedir/extra-manifests/day1/*.yaml $cluster_workspace/openshift/ 2>/dev/null
 
     #render j2 files
@@ -174,6 +174,10 @@ fi
 
 jinja2 $templates/agent-config.yaml.j2 $config_file > $cluster_workspace/agent-config.yaml
 jinja2 $templates/install-config.yaml.j2 $config_file > $cluster_workspace/install-config.yaml
+mirror_source=$(yq '.mirror_source' $config_file)
+if [[ "null" != "$mirror_source" ]]; then
+  cat $mirror_source >> $cluster_workspace/install-config.yaml
+fi
 
 cp $cluster_workspace/agent-config.yaml $cluster_workspace/agent-config.backup.yaml
 cp $cluster_workspace/install-config.yaml $cluster_workspace/install-config.backup.yaml

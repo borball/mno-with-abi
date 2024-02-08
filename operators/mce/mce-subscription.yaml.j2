@@ -6,5 +6,9 @@ metadata:
 spec:
   installPlanApproval: Automatic
   name: multicluster-engine
+  {% if source is defined -%}
+  source: {{ source }}
+  {% else -%}
   source: redhat-operators
+  {%- endif %}
   sourceNamespace: openshift-marketplace

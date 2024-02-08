@@ -1,0 +1,8 @@
+# make sure pull secret contains entry for the mirror otherwise installation will fail
+imageContentSources:
+  - mirrors:
+      - registry.service.local:5000/library/openshift-release-dev
+    source: quay.io/openshift-release-dev/ocp-release
+  - mirrors:
+      - registry.service.local:8443/library/openshift-release-dev
+    source: quay.io/openshift-release-dev/ocp-v4.0-art-dev

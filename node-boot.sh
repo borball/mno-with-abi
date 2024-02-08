@@ -11,6 +11,16 @@ username_password=$2
 iso_image=$3
 kvm_uuid=$4
 
+password_var=$(echo "$username_password" |sed -n 's;^.*:ENV{\(.*\)}$;\1;gp')
+
+if [[ -n "${password_var}" ]]; then
+  if [[ -z "${!password_var}" ]]; then
+    echo "Failed to pick up BMC password from environment variable '${password_var}'"
+    exit -1
+  fi
+  username_password="$(echo $2| cut -f 1 -d :):${!password_var}"
+fi
+
 echo "********************************************************"
 
 if [ ! -z $kvm_uuid ]; then

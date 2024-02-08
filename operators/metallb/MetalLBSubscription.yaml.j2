@@ -6,6 +6,10 @@ metadata:
 spec:
   channel: stable
   name: metallb-operator
-  source: redhat-operators 
+  {% if source is defined -%}
+  source: {{ source }}
+  {% else -%}
+  source: redhat-operators
+  {%- endif %}
   sourceNamespace: openshift-marketplace
   installPlanApproval: Automatic

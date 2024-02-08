@@ -1,13 +1,12 @@
 cluster:
   domain: outbound.vz.bos2.lab
-  name: compact
+  name: cluster6
   apiVIPs:
-    - 192.168.58.90
-    #- 2600:52:7:58::90
+    - 192.168.58.60
+    #- 2600:52:7:58::60
   ingressVIPs:
-    - 192.168.58.91
-    #- 2600:52:7:58::91
-
+    - 192.168.58.67
+    #- 2600:52:7:58::67
 hosts:
   common:
     ipv4:
@@ -42,80 +41,76 @@ hosts:
       bypass_proxy: true
 
   masters:
-    - hostname: master0.compact.outbound.vz.bos2.lab
-      roles:
-        - infra
-      labels:
-        - cluster.ocs.openshift.io/openshift-storage=""
-      interface: bond0
-      bond:
-        members:
-          - interface: ens1f0
-            mac: de:ad:be:ff:10:30
-          - interface: ens1f
-            mac: de:ad:be:ff:10:31
-      mac: de:ad:be:ff:10:30
-      ipv4:
-        ip: 192.168.58.30
-      bmc:
-        address: 192.168.58.15:8080
-        password: Administrator:dummy
-        node_uuid: 22222222-1111-1111-0000-000000000000
-    - hostname: master1.compact.outbound.vz.bos2.lab
-      roles:
-        - infra
-      labels:
-        - cluster.ocs.openshift.io/openshift-storage=""
+    - hostname: master1.odf.outbound.vz.bos2.lab
       interface: ens1f0
-      mac: de:ad:be:ff:10:31
+      mac: de:ad:be:ff:10:61
       ipv4:
-        ip: 192.168.58.31
+        ip: 192.168.58.61
       bmc:
         address: 192.168.58.15:8080
         password: Administrator:dummy
-        node_uuid: 22222222-1111-1111-0000-000000000001
-    - hostname: master2.compact.outbound.vz.bos2.lab
-      roles:
-        - infra
-      labels:
-        - cluster.ocs.openshift.io/openshift-storage=""
+        node_uuid: 22222222-1111-1111-0000-111100000061
+    - hostname: master2.odf.outbound.vz.bos2.lab
       interface: ens1f0
-      mac: de:ad:be:ff:10:32
+      mac: de:ad:be:ff:10:62
       ipv4:
-        ip: 192.168.58.32
+        ip: 192.168.58.62
       bmc:
         address: 192.168.58.15:8080
         password: Administrator:dummy
-        node_uuid: 22222222-1111-1111-0000-000000000002
+        node_uuid: 22222222-1111-1111-0000-111100000062
+    - hostname: master3.odf.outbound.vz.bos2.lab
+      interface: ens1f0
+      mac: de:ad:be:ff:10:63
+      ipv4:
+        ip: 192.168.58.63
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-111100000063
   workers:
-    - hostname: worker0.compact.outbound.vz.bos2.lab
+    - hostname: worker1.odf.outbound.vz.bos2.lab
       roles:
-        - worker-hp
-        - others
+        - infra
       labels:
-        - e810-nic-present
+        # marked for providing disk for ODF deployment
+        - cluster.ocs.openshift.io/openshift-storage=
       interface: ens1f0
-      mac: de:ad:be:ff:10:40
+      mac: de:ad:be:ff:10:64
       ipv4:
-        ip: 192.168.58.40
+        ip: 192.168.58.64
       bmc:
         address: 192.168.58.15:8080
         password: Administrator:dummy
-        node_uuid: 22222222-1111-1111-0010-000000000040
-    - hostname: worker0.compact.outbound.vz.bos2.lab
+        node_uuid: 22222222-1111-1111-0000-111100000064
+    - hostname: worker2.odf.outbound.vz.bos2.lab
       roles:
-        - worker-hp
-        - others
+        - infra
       labels:
-        - e700-nic-present
+        # marked for providing disk for ODF deployment
+        - cluster.ocs.openshift.io/openshift-storage=
       interface: ens1f0
-      mac: de:ad:be:ff:10:41
+      mac: de:ad:be:ff:10:65
       ipv4:
-        ip: 192.168.58.41
+        ip: 192.168.58.65
       bmc:
         address: 192.168.58.15:8080
         password: Administrator:dummy
-        node_uuid: 22222222-1111-1111-0010-000000000041
+        node_uuid: 22222222-1111-1111-0000-111100000065
+    - hostname: worker3.odf.outbound.vz.bos2.lab
+      roles:
+        - infra
+      labels:
+        # marked for providing disk for ODF deployment
+        - cluster.ocs.openshift.io/openshift-storage=
+      interface: ens1f0
+      mac: de:ad:be:ff:10:66
+      ipv4:
+        ip: 192.168.58.66
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-111100000066
 
 proxy:
   enabled: false
@@ -159,6 +154,7 @@ day1:
     metallb:
       enabled: true
       source: redhat-operators
+
 day2:
   node_labels_enabled: true
   disable_operator_auto_upgrade: true
@@ -183,35 +179,31 @@ day2:
         numa:
           policy: "single-numa-node"
   # will find from extra-manifests/performance-profiles/ by default, support yaml files only?
-  performance_profiles:
-    - profile-worker.yaml
-    - profile-others.yaml
-  tuned_profiles:
-    - tuned-worker.yaml
-    - tuned-others.yaml
+  #performance_profiles:
+    #- profile-worker.yaml
+    #- profile-others.yaml
+  #tuned_profiles:
+    #- tuned-worker.yaml
+    #- tuned-others.yaml
   operators:
-    nmstate:
-      ## will find yaml or j2 files from extra-manifests/day2/nmstate/* by default if not present
-      #crs: extra-manifests/day2/nmstate/
-      # will find sh files from extra-manifests/day2/nmstate/* by default if not present
-      #scripts: extra-manifests/day2/nmstate/
+    #op:
+      #supported op can be found from operators/operators.yaml. For example: local-storage or nmstate
+      ## additional crs desired to be applied towards the operator, will find yaml or j2 files from extra-manifests/day2/$op/* by default if crs is not present
+      #crs: extra-manifests/day2/$op/
+      # additional scripts desired to be executed, will find sh files from extra-manifests/day2/op/*.sh by default if not present
+      #scripts: extra-manifests/day2/$op/
+      #other free-format data to define variables, used to build the extra-manifests based on the template provided in extra-manifests/day2/$op/
+    #following is an example:
     metallb:
-      ## will find yaml or j2 files from extra-manifests/day2/nmstate/* by default if not present
-      #crs: extra-manifests/day2/metallb/
-      # will find sh files from extra-manifests/day2/metallb/* by default if not present
-      #scripts: extra-manifests/day2/metallb/
-    local-storage:
-      ## will find yaml or j2 files from extra-manifests/day2/local-storage/* by default if not present
-      #crs: extra-manifests/day2/local-storage/
-      # will find sh files from extra-manifests/day2/local-storage/* by default if not present
-      #scripts: extra-manifests/day2/local-storage/
-    whatever:
-      ## will find yaml or j2 files from extra-manifests/day2/whatever/* by default if not present
-      #crs: extra-manifests/day2/whatever/
-      # will find sh files from extra-manifests/day2/whatever/* by default if not present
-      #scripts: extra-manifests/day2/whatever/
+      crs: extra-manifests/day2/metallb/
+      selector:
+        role: "worker"
 
+#set it in a disconnected env
 additional_trust_bundle: /root/registry/ca-bundle.crt
+#set it in a disconnected env, mirror/mirror-operators.sh can be used to generate the file
+mirror_source: /root/registry/local-mirror.yaml
+
 pull_secret: /root/pull-secret.json
 ssh_key: /root/.ssh/id_rsa.pub
 

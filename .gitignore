@@ -9,5 +9,7 @@ sno130
 sno132
 sno131
 *.iml
-./extra-manifests/
-*.iml
+extra-manifests/day1/*.yaml
+extra-manifests/day1/*.yaml.j2
+extra-manifests/day2/*/*.yaml
+extra-manifests/day2/*/*.yaml.j2

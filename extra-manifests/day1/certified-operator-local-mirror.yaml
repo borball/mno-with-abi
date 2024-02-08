@@ -1,0 +1,36 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: certified-operators-local
+  namespace: openshift-marketplace
+spec:
+  image: provisioner.srvc.lan:8443/operators/operators-certified-operator-index:v4.12
+  sourceType: grpc
+  displayName: Certified Operators (Local Mirror)
+---
+apiVersion: operator.openshift.io/v1alpha1
+kind: ImageContentSourcePolicy
+metadata:
+  labels:
+    operators.openshift.org/catalog: "true"
+  name: certified-operators-local-0
+spec:
+  repositoryDigestMirrors:
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/openshift4-ose-sriov-network-device-plugin
+    source: registry.redhat.io/openshift4/ose-sriov-network-device-plugin
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/openshift4-ose-kube-rbac-proxy
+    source: registry.redhat.io/openshift4/ose-kube-rbac-proxy
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/intel-n3000-labeler
+    source: registry.connect.redhat.com/intel/n3000-labeler
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/intel-sriov-fec-operator
+    source: registry.connect.redhat.com/intel/sriov-fec-operator
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/intel-sriov-fec-daemon
+    source: registry.connect.redhat.com/intel/sriov-fec-daemon
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/intel-sriov-fec-operator-bundle
+    source: registry.connect.redhat.com/intel/sriov-fec-operator-bundle

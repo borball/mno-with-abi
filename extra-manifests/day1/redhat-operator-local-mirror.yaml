@@ -1,0 +1,72 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: redhat-operators-local
+  namespace: openshift-marketplace
+spec:
+  image: provisioner.srvc.lan:8443/operators/operators-redhat-operator-index:v4.12
+  sourceType: grpc
+  displayName: Red Hat Operators (Local Mirror)
+---
+apiVersion: operator.openshift.io/v1alpha1
+kind: ImageContentSourcePolicy
+metadata:
+  labels:
+    operators.openshift.org/catalog: "true"
+  name: redhat-operators-local-0
+spec:
+  repositoryDigestMirrors:
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/openshift4-ose-sriov-network-operator-bundle
+    source: registry.redhat.io/openshift4/ose-sriov-network-operator-bundle
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/openshift4-ose-local-storage-operator-bundle
+    source: registry.redhat.io/openshift4/ose-local-storage-operator-bundle
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/odf4-odf-rhel8-operator
+    source: registry.redhat.io/odf4/odf-rhel8-operator
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/openshift4-ose-sriov-network-config-daemon
+    source: registry.redhat.io/openshift4/ose-sriov-network-config-daemon
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/openshift4-ose-kubernetes-nmstate-handler-rhel8
+    source: registry.redhat.io/openshift4/ose-kubernetes-nmstate-handler-rhel8
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/odf4-odf-console-rhel8
+    source: registry.redhat.io/odf4/odf-console-rhel8
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/openshift4-ose-sriov-dp-admission-controller
+    source: registry.redhat.io/openshift4/ose-sriov-dp-admission-controller
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/openshift4-ose-sriov-network-operator
+    source: registry.redhat.io/openshift4/ose-sriov-network-operator
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/openshift4-ose-local-storage-operator
+    source: registry.redhat.io/openshift4/ose-local-storage-operator
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/odf4-odf-operator-bundle
+    source: registry.redhat.io/odf4/odf-operator-bundle
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/openshift4-ose-kube-rbac-proxy
+    source: registry.redhat.io/openshift4/ose-kube-rbac-proxy
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/openshift4-ose-sriov-network-webhook
+    source: registry.redhat.io/openshift4/ose-sriov-network-webhook
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/openshift4-ose-local-storage-diskmaker
+    source: registry.redhat.io/openshift4/ose-local-storage-diskmaker
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/openshift4-kubernetes-nmstate-rhel8-operator
+    source: registry.redhat.io/openshift4/kubernetes-nmstate-rhel8-operator
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/openshift4-ose-sriov-infiniband-cni
+    source: registry.redhat.io/openshift4/ose-sriov-infiniband-cni
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/openshift4-ose-sriov-network-device-plugin
+    source: registry.redhat.io/openshift4/ose-sriov-network-device-plugin
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/openshift4-kubernetes-nmstate-operator-bundle
+    source: registry.redhat.io/openshift4/kubernetes-nmstate-operator-bundle
+  - mirrors:
+    - provisioner.srvc.lan:8443/operators/openshift4-ose-sriov-cni
+    source: registry.redhat.io/openshift4/ose-sriov-cni

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 OCP_RELEASE=${1}
-LOCAL_REGISTRY="provisioner.srvc.lan:8443"
-LOCAL_REPOSITORY="operators/redhat"
+LOCAL_REGISTRY="registry.service.local:5000"
+LOCAL_REPOSITORY="operators"
 PRODUCT_REPO="redhat"
 LOCAL_SECRET_JSON="./pull-secret.json"
 RELEASE_NAME="ocp-release"
@@ -13,6 +13,12 @@ if [[ -z "${OCP_RELEASE}" ]]; then
   echo ""
   echo "Example: ${0} 4.12.33 docker"
   exit 0
+fi
+
+if [[ "$LOCAL_REPOSITORY" =~ "/" ]]; then
+  echo "LOCAL_REPOSITORY must be single folder for oc adm catlog mirror: '$LOCAL_REPOSITORY'"
+  echo "or adjust --max-components=n in the script to allow it"
+  exit -1
 fi
 
 OPERATOR_RELEASE=$(echo "${OCP_RELEASE}" |cut -f 1-2 -d .)
@@ -53,6 +59,8 @@ mirrorOperators() {
   local CATALOG_DIR="${BUILD_DIR}/${CATALOG_SRC}"
   # see https://docs.openshift.com/container-platform/4.12/cli_reference/opm/cli-opm-install.html
   # https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest-${OPERATOR_RELEASE}/opm-linux.tar.gz
+  printf  $(tput setaf 2)"%-60s %-10s"$(tput sgr0)"\n" "== Mirroring $CATALOG_SRC" \
+      "Destination: ${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}/${CATALOG_SRC}:v${OPERATOR_RELEASE}"
   mkdir -p "${CATALOG_DIR}"
   if [[ ! -f "${CATALOG_DIR}.Dockerfile" ]]; then
     echo "Generator ${CATALOG_DIR}.Dockerfile"
@@ -87,7 +95,8 @@ mirrorOperators() {
   # mirror based on the pruned index
   echo "Mirroring operator images from ${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}/${CATALOG_SRC}:v${OPERATOR_RELEASE}"
   oc adm catalog mirror ${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}/${CATALOG_SRC}:v${OPERATOR_RELEASE} \
-    ${LOCAL_REGISTRY}/${LOCAL_REPOSITORY} \
+    "${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}" \
+    --to-manifests="${BUILD_DIR}/manifests/${CATALOG_SRC}" \
     --max-per-registry=2 --request-timeout='1m' \
     -a ${LOCAL_SECRET_JSON} --index-filter-by-os='linux/amd64' \
     --continue-on-error=false --dir="${CATALOG_DIR}"
