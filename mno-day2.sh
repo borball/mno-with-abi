@@ -51,8 +51,11 @@ cluster_workspace=$cluster_name
 
 day2_pp_templates=$manifests/day2/performance-profiles
 day2_pp_workspace="$cluster_workspace"/day2/performance-profiles
+day2_tuned_templates=$manifests/day2/tuned-profiles
+day2_tuned_workspace="$cluster_workspace"/day2/tuned-profiles
 
 mkdir -p $day2_pp_workspace
+mkdir -p $day2_tuned_workspace
 
 export KUBECONFIG=$cluster_workspace/auth/kubeconfig
 
@@ -149,11 +152,12 @@ create_tuned_profiles(){
       if [[ "$tuned_file" = /* ]]; then
         tuned_file_abs=$tuned_file
       else
-        tuned_file_abs=$manifests/day2/tuned_profiles/$tuned_file
+        tuned_file_abs=$day2_tuned_templates/$tuned_file
       fi
       if [ -f  $tuned_file_abs ]; then
-        info "create tuned profile: $tuned_file_abs"
-        oc apply -f $tuned_file_abs
+        cp $tuned_file_abs $day2_tuned_workspace/$tuned_file
+        info "create tuned profile: $day2_tuned_workspace/$tuned_file"
+        oc apply -f $day2_tuned_workspace/$tuned_file
       fi
     fi
   done
