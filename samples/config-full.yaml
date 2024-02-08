@@ -191,15 +191,13 @@ day2:
     #- tuned-others.yaml
   operators:
     #op:
-      #supported op can be found from operators/operators.yaml. For example: local-storage or nmstate
-      ## additional crs desired to be applied towards the operator, will find yaml or j2 files from extra-manifests/day2/$op/* by default if crs is not present
-      #crs: extra-manifests/day2/$op/
-      # additional scripts desired to be executed, will find sh files from extra-manifests/day2/op/*.sh by default if not present
-      #scripts: extra-manifests/day2/$op/
-      #other free-format data to define variables, used to build the extra-manifests based on the template provided in extra-manifests/day2/$op/
-    #following is an example:
+      #Supported 'op' can be found from operators/operators.yaml. For example: local-storage or nmstate
+      #Put additional crs desired to be applied towards the operator in folder extra-manifests/day2/$op/, can support yaml or j2 file;
+      #The yaml files together with the rendered files based on j2 templates will be executed with a respected order by file name.
+      #Put bash scripts desired to be executed in folder extra-manifests/day2/$op/, can support *.sh
+      #Other free-format data to define variables, used to build the extra-manifests based on the template provided in extra-manifests/day2/$op/
+    #following is an example for metallb operator, #to add more examples.
     metallb:
-      crs: extra-manifests/day2/metallb/
       selector:
         role: "worker"
 
