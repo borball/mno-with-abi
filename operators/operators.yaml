@@ -28,7 +28,7 @@ operators:
     desc: MetalLB Operator
   nmstate:
     name: kubernetes-nmstate-operator
-    state: NMState Operator
+    desc: NMState Operator
   odf:
     name: odf-operator
     desc: OpenShift Data Foundation

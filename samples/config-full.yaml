@@ -126,18 +126,39 @@ proxy:
 day1:
   crun: false
   operators:
-    ptp: false
-    sriov: true
-    local-storage: true
-    lvm: false
-    odf: true
-    rhacm: false
-    mce: false
-    gitops: false
-    talm: false
-    nmstate: true
-    metallb: true
-
+    ptp:
+      enabled: false
+      source: redhat-operators
+    sriov:
+      enabled: true
+      source: redhat-operators
+    local-storage:
+      enabled: true
+      source: redhat-operators
+    lvm:
+      enabled: false
+      source: redhat-operators
+    odf:
+      enabled: true
+      source: redhat-operators
+    rhacm:
+      enabled: false
+      source: redhat-operators
+    mce:
+      enabled: false
+      source: redhat-operators
+    gitops:
+      enabled: false
+      source: redhat-operators
+    talm:
+      enabled: false
+      source: redhat-operators
+    nmstate:
+      enabled: true
+      source: redhat-operators
+    metallb:
+      enabled: true
+      source: redhat-operators
 day2:
   node_labels_enabled: true
   disable_operator_auto_upgrade: true
@@ -170,25 +191,21 @@ day2:
     - tuned-others.yaml
   operators:
     nmstate:
-      desc: "NMState Operator"
       ## will find yaml or j2 files from extra-manifests/day2/nmstate/* by default if not present
       #crs: extra-manifests/day2/nmstate/
       # will find sh files from extra-manifests/day2/nmstate/* by default if not present
       #scripts: extra-manifests/day2/nmstate/
     metallb:
-      desc: "MetalLB Operator"
       ## will find yaml or j2 files from extra-manifests/day2/nmstate/* by default if not present
       #crs: extra-manifests/day2/metallb/
       # will find sh files from extra-manifests/day2/metallb/* by default if not present
       #scripts: extra-manifests/day2/metallb/
     local-storage:
-      desc: "Local Storage Operator"
       ## will find yaml or j2 files from extra-manifests/day2/local-storage/* by default if not present
       #crs: extra-manifests/day2/local-storage/
       # will find sh files from extra-manifests/day2/local-storage/* by default if not present
       #scripts: extra-manifests/day2/local-storage/
     whatever:
-      desc: "Whatever Operator"
       ## will find yaml or j2 files from extra-manifests/day2/whatever/* by default if not present
       #crs: extra-manifests/day2/whatever/
       # will find sh files from extra-manifests/day2/whatever/* by default if not present

@@ -221,20 +221,21 @@ config_day2_operators() {
     for ((k=0; k<${#keys[@]}; k++)); do
       op_name="${keys[$k]}"
       op_desc=$(yq ".operators.$op_name.desc" $operators/operators.yaml)
+      op_manifest=$manifests/day2/$op_name/
+      op_workspace=$cluster_workspace/day2/${op_name}
       if [[ "true" == $(yq ".day1.operators.$op_name" $config_file) ]]; then
         info "$op_desc day2" "enabled"
-        mkdir -p $cluster_workspace/day2/
-        readarray -t files < <(find $manifests/day2/$op_name/ -type f -printf "%f\n")
+        readarray -t files < <(find $op_manifest -type f -printf "%f\n")
         for ((i=0; i<${#files[@]}; i++)); do
           file="${files[$i]}"
-          mkdir -p $cluster_workspace/day2/${op_name}
+          mkdir -p $op_workspace
           if [[ "$file" =~ '.yaml.j2' ]]; then
             local yaml_file=${file%".j2"}
-            yq ".operators.$op_name" "$config_file"|jinja2 "$manifests/day2/$op_name/$file" > $cluster_workspace/day2/${op_name}/${yaml_file}
-            oc apply -f $cluster_workspace/day2/${op_name}/${yaml_file}
+            yq ".operators.$op_name" "$config_file"|jinja2 "$op_manifest/$file" > $op_workspace/${yaml_file}
+            oc apply -f $op_workspace/${yaml_file}
           elif [[ "$file" =~ '.yaml' ]]; then
-             cp "$manifests/day2/$op_name/$file" $cluster_workspace/day2/${op_name}/${yaml_file}
-             oc apply -f "$cluster_workspace/day2/${op_name}/$file"
+             cp "$op_manifest/$file" $op_workspace/${yaml_file}
+             oc apply -f "$op_workspace/$file"
           fi
           # todo add .sh and .sh.j2 support
         done
