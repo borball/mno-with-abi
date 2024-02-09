@@ -172,7 +172,7 @@ day2:
         enabled: true
         name: performance-profile-worker-hp
         #manifest can be yaml or j2 template file, find from extra-manifests/day2/performance-profiles/ if a relative path provided
-        manifest: performance-profile-worker-hp.yaml.j2
+        manifest: performance-profile.yaml.j2
         #following are free format, used to build the performance-profile based on the j2 template
         cpu:
           isolated: "2-13,16-27,30-41,44-55"
@@ -185,10 +185,14 @@ day2:
               #node: 1
         numa:
           policy: "single-numa-node"
-  # will find from extra-manifests/performance-profiles/ by default, support yaml files only?
-  #performance_profiles:
-    #- profile-worker.yaml
-    #- profile-others.yaml
+    - name: worker
+      role: worker
+      performance-profile:
+        enabled: true
+        name: performance-profile-worker
+        #manifest can be yaml or j2 template file, find from extra-manifests/day2/performance-profiles/ if a relative path provided
+        manifest: performance-profile-worker.yaml
+
   #tuned_profiles:
     #- tuned-worker.yaml
     #- tuned-others.yaml

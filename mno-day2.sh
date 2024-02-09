@@ -67,7 +67,7 @@ echo
 ocp_release=$(oc version -o json|jq -r '.openshiftVersion')
 ocp_y_version=$(echo $ocp_release | cut -d. -f 1-2)
 
-function create_mcp(){
+function create_mcp_if_not_yet(){
   local name=$1
   local role=$2
   oc get mcp $name 1>/dev/null 2>/dev/null
@@ -92,23 +92,22 @@ EOF
   fi
 }
 
-create_mcps(){
+create_mcps_or_performance_profile(){
   local total_mcp=$(yq ".day2.mcp|length" $config_file)
 
   for ((i=0; i<$total_mcp; i++)); do
     mcp_name=$(yq ".day2.mcp[$i].name" "$config_file"|grep -vE '^null$')
     mcp_role=$(yq ".day2.mcp[$i].role" "$config_file"|grep -vE '^null$')
     if [[ -n "${mcp_name}" ]]; then
-      create_mcp "$mcp_name" "$mcp_role"
-
+      create_mcp_if_not_yet "$mcp_name" "$mcp_role"
       #create performance profile for mcp
       if [[ "true" == $(yq ".day2.mcp[$i].performance_profile.enabled" "$config_file") ]]; then
+        local name=$(yq ".day2.mcp[$i].performance_profile.name" "$config_file")
         local file=$(yq ".day2.mcp[$i].performance_profile.manifest" "$config_file")
         if [[ "$file" =~ '.yaml.j2' ]]; then
-          local yaml_file=${file%".j2"}
-          yq ".day2.mcp[$i]" "$config_file"|jinja2 "$day2_pp_templates/$file" > $day2_pp_workspace/${yaml_file}
-          info "create performance profile: $day2_pp_workspace/${yaml_file}"
-          oc apply -f $day2_pp_workspace/${yaml_file}
+          yq ".day2.mcp[$i]" "$config_file"|jinja2 "$day2_pp_templates/$file" > "$day2_pp_workspace/$name".yaml
+          info "create performance profile: $day2_pp_workspace/$name.yaml"
+          oc apply -f "$day2_pp_workspace/$name.yaml"
         elif [[ "$file" =~ '.yaml' ]]; then
            cp "$day2_pp_templates/$file" $day2_pp_workspace/${file}
            info "create performance profile: $day2_pp_workspace/${file}"
@@ -116,27 +115,6 @@ create_mcps(){
         fi
       fi
 
-    fi
-  done
-}
-
-create_performance_profiles(){
-  local total_pp=$(yq ".day2.performance_profiles|length" $config_file)
-  for ((i=0; i<$total_pp; i++)); do
-    pp_file=$(yq ".day2.performance_profiles[$i]" "$config_file"|grep -vE '^null$')
-
-    if [[ -n "${pp_file}" ]]; then
-      #absolate path
-      if [[ "$pp_file" = /* ]]; then
-        pp_file_abs=$pp_file
-      else
-        pp_file_abs=$manifests/day2/performance-profiles/$pp_file
-      fi
-      if [ -f  $pp_file_abs ]; then
-        cp $pp_file_abs $day2_pp_workspace/$pp_file
-        info "create performance profile: $day2_pp_workspace/$pp_file"
-        oc apply -f $$day2_pp_workspace/$pp_file
-      fi
     fi
   done
 }
@@ -274,8 +252,7 @@ else
   disable_operator_auto_upgrade
 fi
 
-create_mcps
-create_performance_profiles
+create_mcps_or_performance_profile
 create_tuned_profiles
 config_day2_operators
 
