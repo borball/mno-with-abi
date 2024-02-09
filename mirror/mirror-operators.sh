@@ -22,7 +22,18 @@ if [[ "$LOCAL_REPOSITORY" =~ "/" ]]; then
 fi
 
 OPERATOR_RELEASE=$(echo "${OCP_RELEASE}" |cut -f 1-2 -d .)
-OPERATOR_LIST=("odf-operator" "local-storage-operator" "sriov-network-operator" "kubernetes-nmstate-operator" "sriov-fec")
+# TODO, calculate dependency use jq -r '.. .packageName? // empty' index.json |sort|uniq
+OPERATOR_LIST=(
+  "odf-operator"
+  "odf-csi-addons-operator"
+  "ocs-operator"
+  "mcg-operator"
+  "local-storage-operator"
+  "sriov-network-operator"
+  "kubernetes-nmstate-operator"
+  "sriov-fec"
+  "metallb-operator"
+  "cluster-logging")
 
 # build the jq/yq expression to select entry with either name or package in the OPERATOR_LIST
 filter_expression() {
@@ -60,7 +71,7 @@ mirrorOperators() {
   # see https://docs.openshift.com/container-platform/4.12/cli_reference/opm/cli-opm-install.html
   # https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest-${OPERATOR_RELEASE}/opm-linux.tar.gz
   printf  $(tput setaf 2)"%-60s %-10s"$(tput sgr0)"\n" "== Mirroring $CATALOG_SRC" \
-      "Destination: ${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}/${CATALOG_SRC}:v${OPERATOR_RELEASE}"
+	  "Destination: ${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}/${CATALOG_SRC}:v${OPERATOR_RELEASE}"
   mkdir -p "${CATALOG_DIR}"
   if [[ ! -f "${CATALOG_DIR}.Dockerfile" ]]; then
     echo "Generator ${CATALOG_DIR}.Dockerfile"
