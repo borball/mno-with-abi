@@ -10,5 +10,6 @@ extra-manifests/day1/*/*.yaml
 extra-manifests/day2/*/*.yaml
 !extra-manifests/day2/metallb/01-metallb-config.yaml.j2
 !extra-manifests/day2/nmstate/01-nmstate.yaml
+!*.example
 extra-manifests/*.yaml
 *.crt
