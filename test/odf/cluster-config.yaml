@@ -7,6 +7,14 @@ cluster:
   ingressVIPs:
     - 192.168.58.67
     #- 2600:52:7:58::67
+  capabilities:
+    baselineCapabilitySet: None
+    additionalEnabledCapabilities:
+      - baremetal
+      - marketplace
+      - Console
+      - Storage
+      - CSISnapshot
 
 hosts:
   common:

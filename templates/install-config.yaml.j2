@@ -12,6 +12,14 @@ controlPlane:
   hyperthreading: Enabled
   name: master
   replicas: {{ hosts.masters|length }}
+{% if cluster.capabilities is defined -%}
+capabilities:
+  baselineCapabilitySet: {{ cluster.capabilities.baselineCapabilitySet }}
+  additionalEnabledCapabilities:
+    {% for c in cluster.capabilities.additionalEnabledCapabilities -%}
+    - {{ c }}
+    {% endfor %}
+{% endif -%}
 networking:
   clusterNetwork:
   {% if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled -%}

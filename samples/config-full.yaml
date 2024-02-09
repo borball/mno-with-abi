@@ -10,6 +10,15 @@ cluster:
   ntps:
     - 0.rhel.pool.ntp.org
     - 1.rhel.pool.ntp.org
+  #https://docs.openshift.com/container-platform/4.12/installing/cluster-capabilities.html#insights-operator_cluster-capabilities
+  capabilities:
+    baselineCapabilitySet: None
+    additionalEnabledCapabilities:
+      - baremetal
+      - marketplace
+      - Console
+      - Storage
+      - CSISnapshot
 
 hosts:
   common:
