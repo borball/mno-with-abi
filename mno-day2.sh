@@ -219,7 +219,7 @@ config_day2_operators() {
           mkdir -p $op_workspace
           if [[ "$file" =~ '.yaml.j2' ]]; then
             local yaml_file=${file%".j2"}
-            yq ".operators.$op_name" "$config_file"|jinja2 "$op_manifest/$file" > $op_workspace/${yaml_file}
+            yq ".day2.operators.$op_name" "$config_file"|jinja2 "$op_manifest/$file" > $op_workspace/${yaml_file}
             oc apply -f $op_workspace/${yaml_file}
           elif [[ "$file" =~ '.yaml' ]]; then
              cp "$op_manifest/$file" $op_workspace/${yaml_file}
