@@ -158,6 +158,13 @@ apply_extra_manifests(){
   fi
 }
 
+operator_hub(){
+  if [[ $(yq '.container_registry' $config_file) != "null" ]]; then
+    jinja2 $templates/day1/operatorhub.yaml.j2 $config_file > $cluster_workspace/openshift/operatorhub.yaml
+  fi
+}
+
+operator_hub
 enable_crun
 install_operators
 apply_extra_manifests
@@ -174,7 +181,8 @@ fi
 
 jinja2 $templates/agent-config.yaml.j2 $config_file > $cluster_workspace/agent-config.yaml
 jinja2 $templates/install-config.yaml.j2 $config_file > $cluster_workspace/install-config.yaml
-mirror_source=$(yq '.mirror_source' $config_file)
+
+mirror_source=$(yq '.container_registry.image_source' $config_file)
 if [[ "null" != "$mirror_source" ]]; then
   cat $mirror_source >> $cluster_workspace/install-config.yaml
 fi

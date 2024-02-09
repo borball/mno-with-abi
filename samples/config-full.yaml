@@ -220,7 +220,13 @@ day2:
 #set it in a disconnected env
 additional_trust_bundle: /root/registry/ca-bundle.crt
 #set it in a disconnected env, mirror/mirror-operators.sh can be used to generate the file
-mirror_source: /root/registry/local-mirror.yaml
+
+container_registry:
+  image_source: /root/registry/local-mirror.yaml
+  disable_catalogsources:
+    - redhat-marketplace
+    - community-operators
+    - redhat-operators
 
 pull_secret: /root/pull-secret.json
 ssh_key: /root/.ssh/id_rsa.pub
