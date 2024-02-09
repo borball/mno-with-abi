@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cluster="odf"
-version=4.12.45
+version=stable-4.12
 
 basedir="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 root_path="$( cd "$(dirname "$0")/../.." >/dev/null 2>&1 ; pwd -P )"
