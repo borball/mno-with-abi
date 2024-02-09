@@ -2,12 +2,7 @@
 pull-secret.json
 openshift-install
 openshift-install-linux.tar.gz
-sno148
-hub
-sno162
-sno130
-sno132
-sno131
+instances
 *.iml
 extra-manifests/day1/*.yaml
 extra-manifests/day1/*.yaml.j2

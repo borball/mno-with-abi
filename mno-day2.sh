@@ -47,7 +47,7 @@ manifests=$basedir/extra-manifests
 config_file=$1;
 
 cluster_name=$(yq '.cluster.name' $config_file)
-cluster_workspace=$cluster_name
+cluster_workspace=$basedir/instances/$cluster_name
 
 day2_pp_templates=$manifests/day2/performance-profiles
 day2_pp_workspace="$cluster_workspace"/day2/performance-profiles
