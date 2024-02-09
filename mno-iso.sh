@@ -123,7 +123,7 @@ install_operators(){
     for ((k=0; k<${#keys[@]}; k++)); do
       key="${keys[$k]}"
       desc=$(yq ".operators.$key.desc" $operators/operators.yaml)
-      if [[ "true" == $(yq ".day1.operators.$key.enable" $config_file) ]]; then
+      if [[ "true" == $(yq ".day1.operators.$key.enabled" $config_file) ]]; then
         info "$desc" "enabled"
         cp $operators/$key/*.yaml $cluster_workspace/openshift/
 

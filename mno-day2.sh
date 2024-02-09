@@ -102,12 +102,12 @@ create_mcps_or_performance_profile(){
       create_mcp_if_not_yet "$mcp_name" "$mcp_role"
       #create performance profile for mcp
       if [[ "true" == $(yq ".day2.mcp[$i].performance_profile.enabled" "$config_file") ]]; then
-        local name=$(yq ".day2.mcp[$i].performance_profile.name" "$config_file")
         local file=$(yq ".day2.mcp[$i].performance_profile.manifest" "$config_file")
         if [[ "$file" =~ '.yaml.j2' ]]; then
-          yq ".day2.mcp[$i]" "$config_file"|jinja2 "$day2_pp_templates/$file" > "$day2_pp_workspace/$name".yaml
-          info "create performance profile: $day2_pp_workspace/$name.yaml"
-          oc apply -f "$day2_pp_workspace/$name.yaml"
+          local yaml_file="${file%".yaml.j2"}-${mcp_name}.yaml"
+          yq ".day2.mcp[$i]" "$config_file"|jinja2 "$day2_pp_templates/$file" > $day2_pp_workspace/${yaml_file}
+          info "create performance profile: $day2_pp_workspace/${yaml_file}"
+          oc apply -f "$day2_pp_workspace/${yaml_file}"
         elif [[ "$file" =~ '.yaml' ]]; then
            cp "$day2_pp_templates/$file" $day2_pp_workspace/${file}
            info "create performance profile: $day2_pp_workspace/${file}"

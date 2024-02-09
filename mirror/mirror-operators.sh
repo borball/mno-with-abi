@@ -22,18 +22,7 @@ if [[ "$LOCAL_REPOSITORY" =~ "/" ]]; then
 fi
 
 OPERATOR_RELEASE=$(echo "${OCP_RELEASE}" |cut -f 1-2 -d .)
-# TODO, calculate dependency use jq -r '.. .packageName? // empty' index.json |sort|uniq
-OPERATOR_LIST=(
-  "odf-operator"
-  "odf-csi-addons-operator"
-  "ocs-operator"
-  "mcg-operator"
-  "local-storage-operator"
-  "sriov-network-operator"
-  "kubernetes-nmstate-operator"
-  "sriov-fec"
-  "metallb-operator"
-  "cluster-logging")
+OPERATOR_LIST=("odf-operator" "local-storage-operator" "sriov-network-operator" "kubernetes-nmstate-operator" "sriov-fec")
 
 # build the jq/yq expression to select entry with either name or package in the OPERATOR_LIST
 filter_expression() {
