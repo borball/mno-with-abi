@@ -20,7 +20,7 @@ if [[ -n "${password_var}" ]]; then
     echo "Failed to pick up BMC password from environment variable '${password_var}'"
     exit -1
   fi
-  username_password="$(echo $2| cut -f 1 -d :):${!password_var}"
+  username_password="$(echo $3| cut -f 1 -d :):${!password_var}"
 fi
 
 echo "********************************************************"
