@@ -6,7 +6,7 @@ Note: This repo only works for OpenShift 4.12+.
 
 This is a sister repo of [sno-agent-based-installer](https://github.com/borball/sno-agent-based-installer).
 
-This repo provides a set of script to deploy a multiple nodes(3+0 or 3+x) OpenShift cluster based on Agent Based Installer. 
+This repo provides a set of script to deploy a multiple nodes(3+0 or 3+x) OpenShift cluster based on [OpenShift Agent Based Installer](https://docs.openshift.com/container-platform/4.12/installing/installing_with_agent_based_installer/preparing-to-install-with-agent-based-installer.html). 
 
 ## Configuration
 
@@ -119,4 +119,10 @@ Copy the ISO into your HTTP server.
 
 ```shell
 ./mno-install.sh config.yaml
+```
+
+## Day2 operations
+
+```shell
+./mno-day2.sh config.yaml
 ```

@@ -43,27 +43,24 @@ hosts:
         ip: 192.168.58.30
       mac: de:ad:be:ff:10:30
       bmc:
-        address: 192.168.58.15:8080
+        address: 192.168.58.30:8080
         password: Administrator:dummy
-        node_uuid: 22222222-1111-1111-0000-000000000000
     - interface: ens1f0
       hostname: master2.compact.outbound.vz.bos2.lab
       ipv4:
         ip: 192.168.58.31
       mac: de:ad:be:ff:10:31
       bmc:
-        address: 192.168.58.15:8080
+        address: 192.168.58.31:8080
         password: Administrator:dummy
-        node_uuid: 22222222-1111-1111-0000-000000000001
     - interface: ens1f0
       hostname: master3.compact.outbound.vz.bos2.lab
       ipv4:
         ip: 192.168.58.32
       mac: de:ad:be:ff:10:32
       bmc:
-        address: 192.168.58.15:8080
+        address: 192.168.58.32:8080
         password: Administrator:dummy
-        node_uuid: 22222222-1111-1111-0000-000000000002
 
 proxy:
   enabled: false
