@@ -112,10 +112,9 @@ done
 
 echo "-------------------------------"
 echo "Node Rebooted..."
-echo "Installation still in progress, oc command will be available soon, please check the installation progress with oc commands."
 
 sleep 30
-
 send_command_to_all_hosts post_install
 
+echo "Installation still in progress, oc command will be available soon, please check the installation progress with oc commands."
 echo "Enjoy!"
