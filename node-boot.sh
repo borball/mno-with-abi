@@ -1,15 +1,17 @@
 #!/bin/bash
 
+cmd=$1
+
 CURL="curl"
-bmc_address=$(echo "$1" |cut -f 2 -d /)
-bmc_noproxy=$(echo "$1" |cut -f 1 -d / -s)
+bmc_address=$(echo "$2" |cut -f 2 -d /)
+bmc_noproxy=$(echo "$2" |cut -f 1 -d / -s)
 if [[ "NOPROXY"=="${bmc_noproxy}" ]]; then
   CURL+=" --noproxy ${bmc_address}"
 fi
 
-username_password=$2
-iso_image=$3
-kvm_uuid=$4
+username_password=$3
+iso_image=$4
+kvm_uuid=$5
 
 password_var=$(echo "$username_password" |sed -n 's;^.*:ENV{\(.*\)}$;\1;gp')
 
@@ -119,36 +121,46 @@ server_set_boot_once_from_cd() {
     -X PATCH $system_path
 }
 
-echo "-------------------------------"
+install(){
+  echo "-------------------------------"
 
-echo "Starting OpenShift deployment..."
-echo
-server_power_off
+  echo "Starting OpenShift deployment..."
+  echo
+  server_power_off
 
-sleep 15
+  sleep 15
 
-echo "-------------------------------"
-echo
-virtual_media_eject
-echo "-------------------------------"
-echo
-virtual_media_insert
-echo "-------------------------------"
-echo
-virtual_media_status
-echo "-------------------------------"
-echo
-server_set_boot_once_from_cd
-echo "-------------------------------"
+  echo "-------------------------------"
+  echo
+  virtual_media_eject
+  echo "-------------------------------"
+  echo
+  virtual_media_insert
+  echo "-------------------------------"
+  echo
+  virtual_media_status
+  echo "-------------------------------"
+  echo
+  server_set_boot_once_from_cd
+  echo "-------------------------------"
 
-sleep 10
-echo
-server_power_on
-#server_restart
-echo
-echo "-------------------------------"
-echo "Node is booting from virtual media mounted with $iso_image, check your BMC console to monitor the installation progress."
-echo 
+  sleep 10
+  echo
+  server_power_on
+  #server_restart
+  echo
+  echo "-------------------------------"
+  echo "Node is booting from virtual media mounted with $iso_image, check your BMC console to monitor the installation progress."
+  echo
 
-echo "********************************************************"
+  echo "********************************************************"
+}
+
+post_install(){
+  virtual_media_eject
+}
+
+$cmd
+
+
 
