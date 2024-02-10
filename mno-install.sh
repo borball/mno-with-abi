@@ -111,7 +111,7 @@ while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' $assisted_rest)" == "200" ]
 done
 
 echo "-------------------------------"
-echo "Node Rebooted..."
+echo "Nodes Rebooted..."
 
 sleep 30
 send_command_to_all_hosts post_install
