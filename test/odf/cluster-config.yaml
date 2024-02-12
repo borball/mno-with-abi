@@ -62,8 +62,6 @@ hosts:
         node_uuid: 22222222-1111-1111-0000-111100000063
   workers:
     - hostname: worker1.odf.outbound.vz.bos2.lab
-      roles:
-        - infra
       labels:
         # marked for providing disk for ODF deployment
         - cluster.ocs.openshift.io/openshift-storage=
@@ -76,8 +74,6 @@ hosts:
         password: Administrator:dummy
         node_uuid: 22222222-1111-1111-0000-111100000064
     - hostname: worker2.odf.outbound.vz.bos2.lab
-      roles:
-        - infra
       labels:
         # marked for providing disk for ODF deployment
         - cluster.ocs.openshift.io/openshift-storage=
@@ -90,8 +86,6 @@ hosts:
         password: Administrator:dummy
         node_uuid: 22222222-1111-1111-0000-111100000065
     - hostname: worker3.odf.outbound.vz.bos2.lab
-      roles:
-        - infra
       labels:
         # marked for providing disk for ODF deployment
         - cluster.ocs.openshift.io/openshift-storage=
@@ -112,16 +106,20 @@ day1:
       enabled: true
     sriov:
       enabled: true
-    nmstate:
-      enabled: true
-    metallb:
-      enabled: true
 
 day2:
   node_labels_enabled: true
   disable_operator_auto_upgrade: true
   operators:
-
+    local-storage: {}
+    odf:
+      # for dual stack, set to true
+      # other wise, set to false and specify the ip_family IPv6 or IPv4
+      dual_stack: false
+      ip_family: IPv4
+      # number of storage device in the storage device set
+      # should be number of node marked for providing disk for ODF
+      storage_device_count: 3
 pull_secret: /root/pull-secret.json
 ssh_key: /root/.ssh/id_rsa.pub
 

@@ -9,6 +9,11 @@ iso="$root_path"/mno-iso.sh
 mno_workspace="$root_path"/instances/$cluster
 install="$root_path"/mno-install.sh
 config="$basedir"/cluster-config.yaml
+extra_manifests="$root_path"/extra-manifests
+
+copy_extra_manifests(){
+  cp -r "$basedir"/extra-manifests/. $extra_manifests/
+}
 
 install_ocp(){
   echo "Install OCP $cluster"
@@ -21,4 +26,5 @@ install_ocp(){
 
 $basedir/create-kvms.sh
 
+copy_extra_manifests
 install_ocp
