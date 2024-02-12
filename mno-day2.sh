@@ -240,12 +240,13 @@ echo "Applying day2 operations...."
 echo
 
 if [ "true" = "$(yq '.day2.node_labels_enabled' $config_file)" ]; then
-  info "node labels:" "enabled"
+  info "Node labels:" "enabled"
   apply_node_labels
 else
-  warn "node labels:" "disable"
+  warn "Node labels:" "disable"
 fi
 
+echo
 if [ "false" = "$(yq '.day2.disable_operator_auto_upgrade' $config_file)" ]; then
   warn "operator auto upgrade:" "enable"
 else
@@ -254,6 +255,8 @@ fi
 
 create_mcps_or_performance_profile
 create_tuned_profiles
+
+echo
 config_day2_operators
 
 echo
