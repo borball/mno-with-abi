@@ -73,6 +73,7 @@ send_command_to_all_hosts(){
 
 }
 
+SECONDS=0
 send_command_to_all_hosts install
 
 ipv4_enabled=$(yq '.hosts.common.ipv4.enabled // "" ' $config_file)
@@ -112,6 +113,9 @@ done
 
 echo "-------------------------------"
 echo "Nodes Rebooted..."
+
+duration=$SECONDS
+echo "$((duration / 60)) minutes and $((duration % 60)) seconds elapsed."
 
 sleep 30
 send_command_to_all_hosts post_install
