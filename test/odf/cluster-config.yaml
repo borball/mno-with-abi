@@ -104,8 +104,6 @@ day1:
       enabled: true
     odf:
       enabled: true
-    sriov:
-      enabled: true
 
 day2:
   node_labels_enabled: true
