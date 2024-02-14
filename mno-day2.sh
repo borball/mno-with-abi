@@ -246,6 +246,13 @@ else
   warn "Node labels:" "disable"
 fi
 
+if [ "true" = "$(yq '.day2.masters_schedulable' $config_file)" ]; then
+  info "Masters chedulable:" "yes"
+  oc patch schedulers.config.openshift.io/cluster --type merge -p '{"spec":{"mastersSchedulable":true}}'
+else
+  warn "Masters chedulable:" "no"
+fi
+
 echo
 if [ "false" = "$(yq '.day2.disable_operator_auto_upgrade' $config_file)" ]; then
   warn "operator auto upgrade:" "enable"
