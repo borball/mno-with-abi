@@ -246,13 +246,25 @@ else
   warn "Node labels:" "disable"
 fi
 
-if [ "true" = "$(yq '.day2.masters_schedulable' $config_file)" ]; then
-  info "Masters schedulable:" "yes"
-  oc patch schedulers.config.openshift.io/cluster --type merge -p '{"spec":{"mastersSchedulable":true}}'
-else
-  warn "Masters schedulable:" "no"
-  oc patch schedulers.config.openshift.io/cluster --type merge -p '{"spec":{"mastersSchedulable":false}}'
-fi
+master_schedulable(){
+  if [[ "false" == "$(yq '.day2.masters_schedulable' $config_file)" ]]; then
+    total_worker=$(yq '.hosts.workers|length' $config_file)
+    if [[ $total_worker == 0 ]]; then
+      warn "Compact cluster has mastersSchedulable enabled by default, cannot be disabled."
+    else
+      warn "Masters schedulable:" "no"
+      oc patch schedulers.config.openshift.io/cluster --type merge -p '{"spec":{"mastersSchedulable":false}}'
+    fi
+  fi
+
+  if [[ "true" == "$(yq '.day2.masters_schedulable' $config_file)" ]]; then
+    warn "Masters schedulable:" "yes"
+    oc patch schedulers.config.openshift.io/cluster --type merge -p '{"spec":{"mastersSchedulable":true}}'
+  fi
+}
+
+echo
+master_schedulable
 
 echo
 if [ "false" = "$(yq '.day2.disable_operator_auto_upgrade' $config_file)" ]; then
