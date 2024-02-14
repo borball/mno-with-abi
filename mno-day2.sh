@@ -251,6 +251,7 @@ if [ "true" = "$(yq '.day2.masters_schedulable' $config_file)" ]; then
   oc patch schedulers.config.openshift.io/cluster --type merge -p '{"spec":{"mastersSchedulable":true}}'
 else
   warn "Masters schedulable:" "no"
+  oc patch schedulers.config.openshift.io/cluster --type merge -p '{"spec":{"mastersSchedulable":false}}'
 fi
 
 echo
