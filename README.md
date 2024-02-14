@@ -145,7 +145,7 @@ To achieve this, prepare the config.yaml based on an example in [config-full.yam
         - cluster.ocs.openshift.io/openshift-storage=
 
 day2:
-node_labels_enabled: true
+  node_labels_enabled: true
 ```
 
 ### MachineConfigPool and PerformanceProfile
