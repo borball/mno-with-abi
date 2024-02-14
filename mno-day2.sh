@@ -212,7 +212,7 @@ config_day2_operators() {
       op_manifest=$manifests/day2/$op_name/
       op_workspace=$cluster_workspace/day2/${op_name}
       if [[ "true" == $(yq ".day1.operators.$op_name.enabled" $config_file) ]]; then
-        info "$op_desc day2" "enabled"
+        info "$op_desc day2:" "enabled"
         readarray -t files < <(find $op_manifest -type f -printf "%f\n")
         for ((i=0; i<${#files[@]}; i++)); do
           file="${files[$i]}"
@@ -228,10 +228,33 @@ config_day2_operators() {
           # todo add .sh and .sh.j2 support
         done
       else
-        warn "${op_desc}" "disabled"
+        warn "${op_desc}:" "disabled"
       fi
     done
   fi
+}
+
+master_schedulable(){
+  case "$(yq '.day2.masters_schedulable' $config_file)" in
+    true)
+      warn "Masters schedulable:" "yes"
+      oc patch schedulers.config.openshift.io/cluster --type merge -p '{"spec":{"mastersSchedulable":true}}'
+      ;;
+    false)
+      total_worker=$(yq '.hosts.workers|length' $config_file)
+      if [[ $total_worker == 0 ]]; then
+        warn "Compact cluster has mastersSchedulable enabled by default, cannot be disabled."
+      else
+        warn "Masters schedulable:" "no"
+        oc patch schedulers.config.openshift.io/cluster --type merge -p '{"spec":{"mastersSchedulable":false}}'
+      fi
+      ;;
+    null)
+      ;;
+    *)
+      warn "day2.masters_schedulable shall be true or false."
+      ;;
+  esac
 }
 
 echo
@@ -245,23 +268,6 @@ if [ "true" = "$(yq '.day2.node_labels_enabled' $config_file)" ]; then
 else
   warn "Node labels:" "disable"
 fi
-
-master_schedulable(){
-  if [[ "false" == "$(yq '.day2.masters_schedulable' $config_file)" ]]; then
-    total_worker=$(yq '.hosts.workers|length' $config_file)
-    if [[ $total_worker == 0 ]]; then
-      warn "Compact cluster has mastersSchedulable enabled by default, cannot be disabled."
-    else
-      warn "Masters schedulable:" "no"
-      oc patch schedulers.config.openshift.io/cluster --type merge -p '{"spec":{"mastersSchedulable":false}}'
-    fi
-  fi
-
-  if [[ "true" == "$(yq '.day2.masters_schedulable' $config_file)" ]]; then
-    warn "Masters schedulable:" "yes"
-    oc patch schedulers.config.openshift.io/cluster --type merge -p '{"spec":{"mastersSchedulable":true}}'
-  fi
-}
 
 echo
 master_schedulable
