@@ -59,13 +59,22 @@ mkdir -p $day2_tuned_workspace
 
 export KUBECONFIG=$cluster_workspace/auth/kubeconfig
 
-oc get clusterversion
-echo
-oc get nodes
-echo
-
 ocp_release=$(oc version -o json|jq -r '.openshiftVersion')
 ocp_y_version=$(echo $ocp_release | cut -d. -f 1-2)
+
+cluster_info(){
+  oc get clusterversion
+  echo
+  oc get nodes
+  echo
+  oc get co
+  echo
+  oc get operators
+  echo
+  oc get subs -A
+  echo
+  oc get csv -A -o name|sort |uniq
+}
 
 function create_mcp_if_not_yet(){
   local name=$1
@@ -257,6 +266,8 @@ master_schedulable(){
   esac
 }
 
+echo "------------------------------------------------"
+cluster_info
 echo
 echo "------------------------------------------------"
 echo "Applying day2 operations...."
