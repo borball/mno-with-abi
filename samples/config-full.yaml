@@ -227,6 +227,7 @@ container_registry:
   disable_catalogsources:
     - redhat-marketplace
     - community-operators
+    - certified-operators
     - redhat-operators
 
 pull_secret: /root/pull-secret.json
