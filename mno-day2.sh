@@ -200,16 +200,30 @@ apply_node_labels(){
   done
 }
 
-disable_operator_auto_upgrade(){
+install_plan_approval(){
   subs=$(oc get subs -A -o jsonpath='{range .items[*]}{@.metadata.namespace}{" "}{@.metadata.name}{"\n"}{end}')
   subs=($subs)
   length=${#subs[@]}
   for i in $( seq 0 2 $((length-2)) ); do
     ns=${subs[$i]}
     name=${subs[$i+1]}
-    info "operator $name auto upgrade:" "disabled"
-    oc patch subscription -n $ns $name --type='json' -p=['{"op": "replace", "path": "/spec/installPlanApproval", "value":"Manual"}']
+    info "operator $name subscription installPlanApproval:" "$1"
+    oc patch subscription -n $ns $name --type='json' -p=["{\"op\": \"replace\", \"path\": \"/spec/installPlanApproval\", \"value\":\"$1\"}"]
   done
+}
+operator_auto_upgrade(){
+  case "$(yq '.day2.disable_operator_auto_upgrade' $config_file)" in
+    true)
+      warn "Disable operators auto upgrade" "true"
+      install_plan_approval "Manual"
+      ;;
+    false)
+      warn "Disable operators auto upgrade" "false"
+      install_plan_approval "Automatic"
+      ;;
+    *)
+      ;;
+  esac
 }
 
 config_day2_operators() {
@@ -284,11 +298,7 @@ echo
 master_schedulable
 
 echo
-if [ "false" = "$(yq '.day2.disable_operator_auto_upgrade' $config_file)" ]; then
-  warn "operator auto upgrade:" "enable"
-else
-  disable_operator_auto_upgrade
-fi
+operator_auto_upgrade
 
 create_mcps_or_performance_profile
 create_tuned_profiles
