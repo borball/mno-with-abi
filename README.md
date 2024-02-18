@@ -225,3 +225,7 @@ Run script mno-day2.sh to apply all day2 operations based on config.yaml.
 ./mno-day2.sh config.yaml
 ```
 
+## Disconnected environment
+
+TODO
+
