@@ -120,5 +120,8 @@ echo "$((duration / 60)) minutes and $((duration % 60)) seconds elapsed."
 sleep 30
 send_command_to_all_hosts post_install
 
-echo "Installation still in progress, oc command will be available soon, please check the installation progress with oc commands."
-echo "Enjoy!"
+echo "Installation still in progress, oc command will be available soon, you can open another terminal to check the installation progress with oc commands..."
+echo
+echo "Waiting for the cluster to be ready..."
+sleep 180
+oc adm wait-for-stable-cluster
