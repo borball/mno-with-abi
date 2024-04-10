@@ -1,0 +1,123 @@
+cluster:
+  domain: outbound.vz.bos2.lab
+  name: hub
+  apiVIPs:
+    - 192.168.58.60
+    #- 2600:52:7:58::60
+  ingressVIPs:
+    - 192.168.58.67
+    #- 2600:52:7:58::67
+
+hosts:
+  common:
+    ipv4:
+      enabled: true
+      dhcp: false
+      machine_network_cidr: 192.168.58.0/25
+      machine_network_prefix: 25
+      dns: 192.168.58.15
+      gateway: 192.168.58.1
+    ipv6:
+      enabled: false
+      dhcp: false
+    vlan:
+      enabled: false
+    disk: /dev/vda
+
+  masters:
+    - hostname: master1.hub.outbound.vz.bos2.lab
+      interface: ens1f0
+      mac: de:ad:be:ff:10:61
+      ipv4:
+        ip: 192.168.58.61
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-111100000061
+    - hostname: master2.hub.outbound.vz.bos2.lab
+      interface: ens1f0
+      mac: de:ad:be:ff:10:62
+      ipv4:
+        ip: 192.168.58.62
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-111100000062
+    - hostname: master3.hub.outbound.vz.bos2.lab
+      interface: ens1f0
+      mac: de:ad:be:ff:10:63
+      ipv4:
+        ip: 192.168.58.63
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-111100000063
+  workers:
+    - hostname: worker1.hub.outbound.vz.bos2.lab
+      labels:
+        # marked for providing disk for ODF deployment
+        - cluster.ocs.openshift.io/openshift-storage=
+      interface: ens1f0
+      mac: de:ad:be:ff:10:64
+      ipv4:
+        ip: 192.168.58.64
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-111100000064
+    - hostname: worker2.hub.outbound.vz.bos2.lab
+      labels:
+        # marked for providing disk for ODF deployment
+        - cluster.ocs.openshift.io/openshift-storage=
+      interface: ens1f0
+      mac: de:ad:be:ff:10:65
+      ipv4:
+        ip: 192.168.58.65
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-111100000065
+    - hostname: worker3.hub.outbound.vz.bos2.lab
+      labels:
+        # marked for providing disk for ODF deployment
+        - cluster.ocs.openshift.io/openshift-storage=
+      interface: ens1f0
+      mac: de:ad:be:ff:10:66
+      ipv4:
+        ip: 192.168.58.66
+      bmc:
+        address: 192.168.58.15:8080
+        password: Administrator:dummy
+        node_uuid: 22222222-1111-1111-0000-111100000066
+
+day1:
+  operators:
+    local-storage:
+      enabled: true
+    odf:
+      enabled: true
+    rhacm:
+      enabled: true
+    gitops:
+      enabled: true
+    talm:
+      enabled: true
+
+day2:
+  node_labels_enabled: true
+  disable_operator_auto_upgrade: true
+  operators:
+    local-storage: {}
+    hub:
+      # for dual stack, set to true
+      # other wise, set to false and specify the ip_family IPv6 or IPv4
+      dual_stack: false
+      ip_family: IPv4
+      # number of storage device in the storage device set
+      # should be number of node marked for providing disk for ODF
+      storage_device_count: 3
+pull_secret: /root/pull-secret.json
+ssh_key: /root/.ssh/id_rsa.pub
+
+iso:
+  address: http://192.168.58.15/iso/hub.iso
