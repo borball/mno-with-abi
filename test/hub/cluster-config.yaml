@@ -108,7 +108,7 @@ day2:
   disable_operator_auto_upgrade: true
   operators:
     local-storage: {}
-    hub:
+    odf:
       # for dual stack, set to true
       # other wise, set to false and specify the ip_family IPv6 or IPv4
       dual_stack: false
