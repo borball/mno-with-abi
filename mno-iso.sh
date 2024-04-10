@@ -129,7 +129,7 @@ install_operators(){
       desc=$(yq ".operators.$key.desc" $operators/operators.yaml)
       if [[ "true" == $(yq ".day1.operators.$key.enabled" $config_file) ]]; then
         info "$desc" "enabled"
-        cp $operators/$key/*.yaml $cluster_workspace/openshift/
+        cp $operators/$key/*.yaml $cluster_workspace/openshift/ 2>/dev/null
 
         #render j2 files
         j2files=$(ls $operators/$key/*.j2 2>/dev/null)
