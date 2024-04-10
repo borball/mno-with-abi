@@ -2,10 +2,10 @@ cluster:
   domain: outbound.vz.bos2.lab
   name: hub
   apiVIPs:
-    - 192.168.58.60
+    - 192.168.58.80
     #- 2600:52:7:58::60
   ingressVIPs:
-    - 192.168.58.67
+    - 192.168.58.81
     #- 2600:52:7:58::67
 
 hosts:
