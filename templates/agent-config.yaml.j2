@@ -58,7 +58,7 @@ hosts:
           {%- else %}
           type: ethernet
           {%- endif %}
-          mac: {{ host.mac }}
+          mac-address: {{ host.mac }}
         {%- endif %}
           state: up
           {%- if hosts.common.vlan is defined and hosts.common.vlan.enabled %}
@@ -108,7 +108,7 @@ hosts:
           type: ethernet
           {%- endif %}
           state: up
-          mac: {{ host.mac }}
+          mac-address: {{ host.mac }}
           ipv4:
             enabled: false
           ipv6:
