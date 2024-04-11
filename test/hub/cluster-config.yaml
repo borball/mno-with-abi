@@ -105,7 +105,7 @@ day1:
 
 day2:
   node_labels_enabled: true
-  disable_operator_auto_upgrade: true
+  disable_operator_auto_upgrade: false
   operators:
     local-storage: {}
     odf:
