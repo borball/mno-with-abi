@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cluster="hub"
-version=stable-4.15
+version=stable-4.14
 
 basedir="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 root_path="$( cd "$(dirname "$0")/../.." >/dev/null 2>&1 ; pwd -P )"
