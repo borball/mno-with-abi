@@ -101,6 +101,11 @@ fi
 cluster_name=$(yq '.cluster.name' $config_file)
 cluster_workspace=$basedir/instances/$cluster_name
 
+if [[ -d "${cluster_workspace}" ]]; then
+  echo "${cluster_workspace} already exists, please delete the folder ${cluster_workspace} and re-run the script."
+  exit -1
+fi
+
 mkdir -p $cluster_workspace
 mkdir -p $cluster_workspace/openshift
 
