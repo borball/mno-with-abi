@@ -46,7 +46,7 @@ send_command_to_all_hosts(){
   for ((i=0; i<$total_master;i++)); do
     bmc_address=$(yq ".hosts.masters[$i].bmc.address" $config_file)
     bmc_userpass=$(yq ".hosts.masters[$i].bmc.password" $config_file)
-    bmc_uuid=$(yq ".hosts.masters[$i].bmc.node_uuid" $config_file)
+    bmc_uuid=$(yq -r ".hosts.masters[$i].bmc.node_uuid" $config_file)
     echo "Master $i -> ${bmc_address} : ${bmc_userpass} : ${bmc_uuid} "
     if [[ "true" == "${bmc_noproxy}" ]]; then
       $basedir/node-boot.sh $command "NOPROXY/${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
@@ -61,7 +61,7 @@ send_command_to_all_hosts(){
     for ((i=0; i<$total_worker;i++)); do
       bmc_address=$(yq ".hosts.workers[$i].bmc.address" $config_file)
       bmc_userpass=$(yq ".hosts.workers[$i].bmc.password" $config_file)
-      bmc_uuid=$(yq ".hosts.workers[$i].bmc.node_uuid" $config_file)
+      bmc_uuid=$(yq -r ".hosts.workers[$i].bmc.node_uuid" $config_file)
       echo "Worker $i -> ${bmc_address} : ${bmc_userpass} : ${bmc_uuid} "
     if [[ "true" == "${bmc_noproxy}" ]]; then
       $basedir/node-boot.sh $command "NOPROXY/${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
