@@ -141,7 +141,7 @@ hosts:
           - destination: 0.0.0.0/0
             next-hop-address: {{ hosts.common.ipv4.gateway }}
             {%- if hosts.common.vlan is defined and hosts.common.vlan.enabled %}
-            next-hop-interface: {{ host.common.vlan.name }}
+            next-hop-interface: {{ hosts.common.vlan.name }}
             {%- else %}
             next-hop-interface: {{ host.interface }}
             {%- endif %}
