@@ -181,6 +181,10 @@ apply_extra_manifests
 pull_secret=$(yq '.pull_secret' $config_file)
 export pull_secret=$(cat $pull_secret)
 ssh_key=$(yq '.ssh_key' $config_file)
+if [[ -z "$ssh_key" ]] || [[ ! -f "$ssh_key" ]]; then
+  warn "ssh-key" "ssh_key not set or file missing"
+  exit -1
+fi
 export ssh_key=$(cat $ssh_key)
 
 bundle_file=$(yq '.additional_trust_bundle' $config_file)
