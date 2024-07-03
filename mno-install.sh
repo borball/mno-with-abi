@@ -39,6 +39,10 @@ config_file=$1; shift
 total_master=$(yq '.hosts.masters|length' $config_file)
 iso=$(yq '.iso.address' $config_file)
 
+cluster_name=$(yq '.cluster.name' $config_file)
+cluster_workspace=$basedir/instances/$cluster_name
+export KUBECONFIG=$cluster_workspace/auth/kubeconfig
+
 send_command_to_all_hosts(){
   command=$1
   bmc_noproxy=$(yq ".hosts.common.bmc.bypass_proxy" $config_file)
