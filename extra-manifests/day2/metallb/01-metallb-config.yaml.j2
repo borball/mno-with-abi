@@ -5,7 +5,7 @@ metadata:
   namespace: metallb-system
 spec:
   nodeSelector:
-    node-role.kubernetes.io/{{ role | default('worker') }}: ""
+    node-role.kubernetes.io/{{ selector.role | default('worker') }}: ""
   #logLevel: debug
   controllerConfig:
     resources:

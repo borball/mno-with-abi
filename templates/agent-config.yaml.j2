@@ -49,8 +49,10 @@ hosts:
           type: bond
           link-aggregation:
             mode: {{ hosts.common.bond.mode }}
+            {%- if hosts.common.bond.miimon is defined %}
             options:
                miimon: {{ hosts.common.bond.miimon }}
+            {%- endif %}
             port:
               {%- for member in host.bond.members %}
               - {{ member.interface }}
@@ -98,8 +100,10 @@ hosts:
           type: bond
           link-aggregation:
             mode: {{ hosts.common.bond.mode }}
+            {%- if hosts.common.bond.miimon is defined %}
             options:
                miimon: {{ hosts.common.bond.miimon }}
+            {%- endif %}
             port:
               {%- for member in host.bond.members %}
               - {{ member.interface }}
