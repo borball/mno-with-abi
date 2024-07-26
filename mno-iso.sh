@@ -81,21 +81,26 @@ export ocp_y_release=$(echo $ocp_release_version |cut -d. -f1-2)
 
 echo "You are going to download OpenShift installer $ocp_release: ${ocp_release_version}"
 
-if [ -f $basedir/openshift-install-linux.tar.gz ]; then
-  rm -f $basedir/openshift-install-linux.tar.gz
-fi
-
-status_code=$(curl -s -o /dev/null -w "%{http_code}" https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/$ocp_release_version/)
-if [ $status_code = "200" ]; then
-  curl -L https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/${ocp_release_version}/openshift-install-linux.tar.gz -o $basedir/openshift-install-linux.tar.gz
-  tar xfz $basedir/openshift-install-linux.tar.gz -C $basedir openshift-install
-else
-  #fetch from image
-  if [[ $ocp_release == *"nightly"* ]] || [[ $ocp_release == *"ci"* ]]; then
-    oc adm release extract --command=openshift-install registry.ci.openshift.org/ocp/release:$ocp_release_version --registry-config=$(yq '.pull_secret' $config_file) --to="$basedir"
+if [ ! -f $basedir/openshift-install-linux.$ocp_release_version.tar.gz ]; then
+  status_code=$(curl -s -o /dev/null -w "%{http_code}" https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/$ocp_release_version/)
+  if [ $status_code = "200" ]; then
+    curl -L https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/${ocp_release_version}/openshift-install-linux.tar.gz -o $basedir/openshift-install-linux.$ocp_release_version.tar.gz
+    if [[ $? -eq 0 ]]; then
+      tar zxf $basedir/openshift-install-linux.$ocp_release_version.tar.gz -C $basedir openshift-install
+    else
+      rm -f $basedir/openshift-install-linux.$ocp_release_version.tar.gz
+      exit -1
+    fi
   else
-    oc adm release extract --command=openshift-install quay.io/openshift-release-dev/ocp-release:$ocp_release_version-x86_64 --registry-config=$(yq '.pull_secret' $config_file) --to="$basedir"
+    #fetch from image
+    if [[ $ocp_release == *"nightly"* ]] || [[ $ocp_release == *"ci"* ]]; then
+      oc adm release extract --command=openshift-install registry.ci.openshift.org/ocp/release:$ocp_release_version --registry-config=$(yq '.pull_secret' $config_file) --to="$basedir"
+    else
+      oc adm release extract --command=openshift-install quay.io/openshift-release-dev/ocp-release:$ocp_release_version-x86_64 --registry-config=$(yq '.pull_secret' $config_file) --to="$basedir"
+    fi
   fi
+else
+  tar zxf $basedir/openshift-install-linux.$ocp_release_version.tar.gz -C $basedir openshift-install
 fi
 
 cluster_name=$(yq '.cluster.name' $config_file)

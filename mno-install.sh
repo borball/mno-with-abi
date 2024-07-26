@@ -89,31 +89,44 @@ else
   assisted_rest=http://[$rendezvousIP]:8090/api/assisted-install/v2/clusters
 fi
 
-while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' $assisted_rest)" != "200" ]]; do
+REMOTE_CURL="curl -s"
+if [[ "true"=="${bmc_noproxy}" ]]; then
+  REMOTE_CURL+=" --noproxy ${rendezvousIP}"
+fi
+
+while [[ "$($REMOTE_CURL -o /dev/null -w ''%{http_code}'' $assisted_rest)" != "200" ]]; do
   echo -n "."
-  sleep 2;
+  sleep 10;
 done
 
 echo
 echo "Installing in progress..."
-
-curl --silent $assisted_rest |jq
-
-while [[ "\"installing\"" != $(curl --silent $assisted_rest |jq '.[].status') ]]; do
+while 
   echo "-------------------------------"
-  curl --silent $assisted_rest |jq
-  sleep 5
-done
+  _status=$($REMOTE_CURL $assisted_rest)
+  echo "$_status"| \
+   jq -c '.[] | with_entries(select(.key | contains("name","updated_at","_count","status","validations_info")))|.validations_info|=(.// empty|fromjson|del(.. | .id?))'
+  [[ "\"installing\"" != $(echo "$_status" |jq '.[].status') ]]
+do sleep 15; done
 
 echo
+prev_percentage=""
 echo "-------------------------------"
-while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' $assisted_rest)" == "200" ]]; do
-  total_percentage=$(curl --silent $assisted_rest |jq '.[].progress.total_percentage')
+while
+  total_percentage=$($REMOTE_CURL $assisted_rest |jq '.[].progress.total_percentage')
   if [ ! -z $total_percentage ]; then
-    echo "Installation in progress: completed $total_percentage/100"
+    if [[ "$total_percentage" == "$prev_percentage" ]]; then
+       echo -n "."
+    else
+      echo
+      echo -n "Installation in progress: completed $total_percentage/100"
+      prev_percentage=$total_percentage
+    fi
   fi
-  sleep 15;
-done
+  sleep 20;
+  [[ "$($REMOTE_CURL -o /dev/null -w ''%{http_code}'' $assisted_rest)" == "200" ]]
+do true; done
+echo
 
 echo "-------------------------------"
 echo "Nodes Rebooted..."
