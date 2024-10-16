@@ -1,7 +1,8 @@
 .history
+*.pub
 pull-secret.json
 openshift-install
-openshift-install-linux.tar.gz
+openshift-install-linux.*.tar.gz
 instances
 *.iml
 extra-manifests/*.yaml
