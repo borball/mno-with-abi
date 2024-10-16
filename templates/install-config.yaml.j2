@@ -2,6 +2,9 @@ apiVersion: v1
 metadata:
   name: {{ cluster.name }}
 baseDomain: {{ cluster.domain }}
+{% if cluster.cpuPartitioningMode is defined -%}
+cpuPartitioningMode: {{ cluster.cpuPartitioningMode }}
+{% endif -%}
 compute:
   - architecture: amd64
     hyperthreading: Enabled

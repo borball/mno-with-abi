@@ -36,6 +36,11 @@ fi
 system=$(sed -e 's/^"//' -e 's/"$//' <<<$system)
 manager=$(sed -e 's/^"//' -e 's/"$//' <<<$manager)
 
+if [ $manager == "null" ] || [ $system == "null" ]; then
+  echo "FATAL: either redfish system or manager is 'null', please check!"
+  exit -1
+fi
+
 system_path=https://$bmc_address$system
 manager_path=https://$bmc_address$manager
 virtual_media_root=$manager_path/VirtualMedia

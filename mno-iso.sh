@@ -57,10 +57,10 @@ basedir="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 templates=$basedir/templates
 operators=$basedir/operators
 
-config_file=$1; shift
+config_file_input=$1; shift
 ocp_release=$1; shift
 
-if [ -z "$config_file" ]
+if [ -z "$config_file_input" ]
 then
   config_file=config.yaml
 fi
@@ -78,10 +78,32 @@ if [ -z $ocp_release_version ]; then
 fi
 
 export ocp_y_release=$(echo $ocp_release_version |cut -d. -f1-2)
+export OCP_Y_VERSION=$ocp_y_release
+export OCP_Z_VERSION=$ocp_release_version
 
-echo "You are going to download OpenShift installer $ocp_release: ${ocp_release_version}"
+cluster_name=$(yq '.cluster.name' $config_file_input)
+cluster_workspace=$basedir/instances/$cluster_name
+
+if [[ -d "${cluster_workspace}" ]]; then
+  echo "${cluster_workspace} already exists, please delete the folder ${cluster_workspace} and re-run the script."
+  exit -1
+fi
+
+mkdir -p $cluster_workspace
+mkdir -p $cluster_workspace/openshift
+
+config_file="$cluster_workspace/config-resolved.yaml"
+
+if [ $(cat $config_file_input |grep -E 'OCP_Y_RELEASE|OCP_Z_RELEASE' |wc -l) -gt 0 ]; then
+  sed "s/OCP_Y_RELEASE/$ocp_y_release/g;s/OCP_Z_RELEASE/$ocp_release_version/g" $config_file_input > $config_file
+else
+  cp $config_file_input $config_file
+fi
+echo "Will use $config_file as the configuration in other sno-* scripts."
 
 if [ ! -f $basedir/openshift-install-linux.$ocp_release_version.tar.gz ]; then
+  echo "You are going to download OpenShift installer $ocp_release: ${ocp_release_version}"
+  echo
   status_code=$(curl -s -o /dev/null -w "%{http_code}" https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/$ocp_release_version/)
   if [ $status_code = "200" ]; then
     curl -L https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/${ocp_release_version}/openshift-install-linux.tar.gz -o $basedir/openshift-install-linux.$ocp_release_version.tar.gz
@@ -102,19 +124,6 @@ if [ ! -f $basedir/openshift-install-linux.$ocp_release_version.tar.gz ]; then
 else
   tar zxf $basedir/openshift-install-linux.$ocp_release_version.tar.gz -C $basedir openshift-install
 fi
-
-cluster_name=$(yq '.cluster.name' $config_file)
-cluster_workspace=$basedir/instances/$cluster_name
-
-if [[ -d "${cluster_workspace}" ]]; then
-  echo "${cluster_workspace} already exists, please delete the folder ${cluster_workspace} and re-run the script."
-  exit -1
-fi
-
-mkdir -p $cluster_workspace
-mkdir -p $cluster_workspace/openshift
-
-echo
 
 enable_crun(){
   if [ "4.12" = $ocp_y_release ]; then
@@ -172,13 +181,55 @@ apply_extra_manifests(){
   fi
 }
 
-operator_hub(){
-  if [[ $(yq '.container_registry' $config_file) != "null" ]]; then
-    jinja2 $templates/day1/operatorhub.yaml.j2 $config_file > $cluster_workspace/openshift/operatorhub.yaml
+operator_catalog_sources(){
+  if [ "4.12" = $ocp_y_release ] || [ "4.13" = $ocp_y_release ] || [ "4.14" = $ocp_y_release ] || [ "4.15" = $ocp_y_release ]; then
+    if [[ $(yq '.container_registry' $config_file) != "null" ]]; then
+      jinja2 $templates/day1/operatorhub.yaml.j2 $config_file > $cluster_workspace/openshift/operatorhub.yaml
+    fi
+  else
+    #4.16+, disable marketplace operator
+    cp $templates/day1/marketplace/09-openshift-marketplace-ns.yaml $cluster_workspace/openshift/
+
+    #create unmanaged catalog sources
+    if [[ "$(yq '.container_registry.catalog_sources.defaults' $config_file)" != "null" ]]; then
+      #enable the ones in container_registry.catalog_sources.defaults
+      local size=$(yq '.container_registry.catalog_sources.defaults|length' $config_file)
+      for ((k=0; k<$size; k++)); do
+        local name=$(yq ".container_registry.catalog_sources.defaults[$k]" $config_file)
+        jinja2 $templates/day1/catalogsource/$name.yaml.j2 > $cluster_workspace/openshift/$name.yaml
+      done
+    else
+      #by default redhat-operators and certified-operators shall be enabled
+      jinja2 $templates/day1/catalogsource/redhat-operators.yaml.j2 > $cluster_workspace/openshift/redhat-operators.yaml
+      jinja2 $templates/day1/catalogsource/certified-operators.yaml.j2 > $cluster_workspace/openshift/certified-operators.yaml
+    fi
+
+  fi
+
+  #all versions
+  if [ "$(yq '.container_registry.catalog_sources.customs' $config_file)" != "null" ]; then
+    local size=$(yq '.container_registry.catalog_sources.customs|length' $config_file)
+    for ((k=0; k<$size; k++)); do
+      yq ".container_registry.catalog_sources.customs[$k]" $config_file |jinja2 $templates/day1/catalogsource/catalogsource.yaml.j2 > $cluster_workspace/openshift/catalogsource-$k.yaml
+    done
+  fi
+
+  #all versions
+  if [ "$(yq '.container_registry.icsp' $config_file)" != "null" ]; then
+    local size=$(yq '.container_registry.icsp|length' $config_file)
+    for ((k=0; k<$size; k++)); do
+      local name=$(yq ".container_registry.icsp[$k]" $config_file)
+      if [ -f "$name" ]; then
+        info "$name" "copy to $cluster_workspace/openshift/"
+        cp $name $cluster_workspace/openshift/
+      else
+        warn "$name" "not a file or not exist"
+      fi
+    done
   fi
 }
 
-operator_hub
+operator_catalog_sources
 enable_crun
 install_operators
 apply_extra_manifests

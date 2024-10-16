@@ -1,0 +1,14 @@
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: redhat-marketplace
+  namespace: openshift-marketplace
+spec:
+  displayName: Red Hat Marketplace
+  image: registry.redhat.io/redhat/redhat-marketplace-index:v{{ environ('ocp_y_release') }}
+  publisher: Red Hat
+  sourceType: grpc
+  updateStrategy:
+    registryPoll:
+      interval: 24h

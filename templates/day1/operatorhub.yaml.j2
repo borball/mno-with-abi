@@ -4,11 +4,11 @@ metadata:
   name: cluster
 spec:
   sources:
-  - disabled: {% if 'redhat-marketplace' in container_registry.disable_catalogsources %}true{% else %}false{% endif %}
+  - disabled: {% if container_registry is defined and 'redhat-marketplace' not in container_registry.catalog_sources.defaults %}true{% else %}false{% endif %}
     name: redhat-marketplace
-  - disabled: {% if 'community-operators' in container_registry.disable_catalogsources %}true{% else %}false{% endif %}
+  - disabled: {% if container_registry is defined and 'community-operators' not in container_registry.catalog_sources.defaults %}true{% else %}false{% endif %}
     name: community-operators
-  - disabled: {% if 'redhat-operators' in container_registry.disable_catalogsources %}true{% else %}false{% endif %}
+  - disabled: {% if container_registry is defined and 'redhat-operators' not in container_registry.catalog_sources.defaults %}true{% else %}false{% endif %}
     name: redhat-operators
-  - disabled: {% if 'certified-operators' in container_registry.disable_catalogsources %}true{% else %}false{% endif %}
+  - disabled: {% if container_registry is defined and 'certified-operators' not in container_registry.catalog_sources.defaults %}true{% else %}false{% endif %}
     name: certified-operators

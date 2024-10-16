@@ -13,19 +13,13 @@ if ! type "jinja2" > /dev/null; then
   pip3 install --user jinja2-cli[yaml]
 fi
 
-set -euoE pipefail
-set -o nounset
 
 usage(){
-  echo "Usage : $0 config-file"
-  echo "Example : $0 config-compact.yaml"
+  echo "Usage : $0 <cluster-name>"
+  echo "If <cluster-name> is not present, it will install the newest cluster created by mno-iso.sh"
+  echo "Example : $0" 
+  echo "Example : $0 mno130" 
 }
-
-if [ $# -lt 1 ]
-then
-  usage
-  exit
-fi
 
 if [[ ( $@ == "--help") ||  $@ == "-h" ]]
 then 
@@ -34,13 +28,26 @@ then
 fi
 
 basedir="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+cluster_name=$1; shift
 
-config_file=$1; shift
-total_master=$(yq '.hosts.masters|length' $config_file)
-iso=$(yq '.iso.address' $config_file)
+if [ -z "$cluster_name" ]; then
+  cluster_name=$(ls -t $basedir/instances |head -1)
+  if [ -z "$cluster_name" ]; then
+    echo "No cluster found in $basedir/instances"
+    exit
+  fi
+fi
 
-cluster_name=$(yq '.cluster.name' $config_file)
+set -euoE pipefail
+set -o nounset
+
 cluster_workspace=$basedir/instances/$cluster_name
+config_file=$cluster_workspace/config-resolved.yaml
+
+total_master=$(yq '.hosts.masters|length' $config_file)
+iso_image=$(yq '.iso.address' $config_file)
+deploy_cmd=$(eval echo $(yq '.iso.deploy // ""' $config_file))
+
 export KUBECONFIG=$cluster_workspace/auth/kubeconfig
 
 send_command_to_all_hosts(){
@@ -53,9 +60,9 @@ send_command_to_all_hosts(){
     bmc_uuid=$(yq -r ".hosts.masters[$i].bmc.node_uuid" $config_file)
     echo "Master $i -> ${bmc_address} : ${bmc_userpass} : ${bmc_uuid} "
     if [[ "true" == "${bmc_noproxy}" ]]; then
-      $basedir/node-boot.sh $command "NOPROXY/${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
+      $basedir/node-boot.sh $command "NOPROXY/${bmc_address}" ${bmc_userpass} ${iso_image} ${bmc_uuid}
     else
-      $basedir/node-boot.sh $command "${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
+      $basedir/node-boot.sh $command "${bmc_address}" ${bmc_userpass} ${iso_image} ${bmc_uuid}
     fi
 
   done
@@ -68,14 +75,29 @@ send_command_to_all_hosts(){
       bmc_uuid=$(yq -r ".hosts.workers[$i].bmc.node_uuid" $config_file)
       echo "Worker $i -> ${bmc_address} : ${bmc_userpass} : ${bmc_uuid} "
     if [[ "true" == "${bmc_noproxy}" ]]; then
-      $basedir/node-boot.sh $command "NOPROXY/${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
+      $basedir/node-boot.sh $command "NOPROXY/${bmc_address}" ${bmc_userpass} ${iso_image} ${bmc_uuid}
     else
-      $basedir/node-boot.sh $command "${bmc_address}" ${bmc_userpass} ${iso} ${bmc_uuid}
+      $basedir/node-boot.sh $command "${bmc_address}" ${bmc_userpass} ${iso_image} ${bmc_uuid}
     fi
     done
   fi
 
 }
+
+deploy_iso(){
+  [[ -z "$deploy_cmd" ]] && return
+  [[ ! -x $(realpath $deploy_cmd) ]] && echo "Failed to deploy ISO, command not executable: $deploy_cmd" && exit
+  echo "Deploy ISO: $deploy_cmd $cluster_workspace/agent.x86_64.iso $iso_image"
+  $deploy_cmd $cluster_workspace/agent.x86_64.iso $iso_image
+  local result=$?
+  if [[ $result -ne 0 ]]; then
+    echo "Failed: $result"
+    exit
+  fi
+}
+
+echo "-------------------------------"
+deploy_iso
 
 SECONDS=0
 send_command_to_all_hosts install

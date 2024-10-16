@@ -1,0 +1,14 @@
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: community-operators
+  namespace: openshift-marketplace
+spec:
+  displayName: Community Operators
+  image: registry.redhat.io/redhat/community-operator-index:v{{ environ('ocp_y_release') }}
+  publisher: Red Hat
+  sourceType: grpc
+  updateStrategy:
+    registryPoll:
+      interval: 24h

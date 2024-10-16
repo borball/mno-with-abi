@@ -1,1 +1,0 @@
-#use the scripts to mirror the operators and openshift images.
