@@ -1,29 +1,50 @@
 #!/bin/bash
 
-cmd=$1
+cmd="install"
+bmc_noproxy=0
+CURL="curl -s"
 
-CURL="curl"
-bmc_address=$(echo "$2" |cut -f 2 -d /)
-bmc_noproxy=$(echo "$2" |cut -f 1 -d / -s)
-if [[ "NOPROXY"=="${bmc_noproxy}" ]]; then
-  CURL+=" --noproxy ${bmc_address}"
-fi
-
-username_password=$3
-iso_image=$4
-kvm_uuid=$5
+while getopts "c:h:u:i:k:l:n" flag; do
+  case ${flag} in
+   c)
+     cmd="${OPTARG}"
+     ;;
+   h) 
+     bmc_address="${OPTARG}"
+     ;;
+   u)
+     username_password="${OPTARG}"
+     ;;
+   i)
+     iso_image="${OPTARG}"
+     ;;
+   k)
+     kvm_uuid="${OPTARG}"
+     ;;
+   l)
+     log_file="${OPTARG}"
+     ;;
+   n)
+     bmc_noproxy=1
+     ;;
+  esac
+done
 
 password_var=$(echo "$username_password" |sed -n 's;^.*:ENV{\(.*\)}$;\1;gp')
 
-if [[ -n "${password_var}" ]]; then
-  if [[ -z "${!password_var}" ]]; then
-    echo "Failed to pick up BMC password from environment variable '${password_var}'"
-    exit -1
-  fi
-  username_password="$(echo $3| cut -f 1 -d :):${!password_var}"
+if [[ bmc_noproxy == 1 ]]; then
+  CURL+=" --noproxy ${bmc_address}"
 fi
 
-echo "********************************************************"
+if [[ -n "${password_var}" ]]; then
+  if [[ -z "${!password_var}" ]]; then
+    echo "FATAL: failed to pick up BMC password from environment variable '${password_var}'"
+    exit -1
+  fi
+  username_password="$(echo $username_password| cut -f 1 -d :):${!password_var}"
+fi
+
+rest_response=$(mktemp)
 
 if [ ! -z $kvm_uuid ]; then
   system=/redfish/v1/Systems/$kvm_uuid
@@ -36,7 +57,7 @@ fi
 system=$(sed -e 's/^"//' -e 's/"$//' <<<$system)
 manager=$(sed -e 's/^"//' -e 's/"$//' <<<$manager)
 
-if [ $manager == "null" ] || [ $system == "null" ]; then
+if [ "$manager" == "null" ] || [ "$system" == "null" ]; then
   echo "FATAL: either redfish system or manager is 'null', please check!"
   exit -1
 fi
@@ -46,7 +67,7 @@ manager_path=https://$bmc_address$manager
 virtual_media_root=$manager_path/VirtualMedia
 virtual_media_path=""
 
-virtual_medias=$($CURL -sku ${username_password} $virtual_media_root | jq '.Members[]."@odata.id"' )
+virtual_medias=$($CURL -sku ${username_password} $virtual_media_root | jq '.Members[]."@odata.id"')
 for vm in $virtual_medias; do
   vm=$(sed -e 's/^"//' -e 's/"$//' <<<$vm)
   if [ $($CURL -sku ${username_password} https://$bmc_address$vm | jq '.MediaTypes[]' |grep -ciE 'CD|DVD') -gt 0 ]; then
@@ -55,8 +76,16 @@ for vm in $virtual_medias; do
 done
 virtual_media_path=https://$bmc_address$virtual_media_path
 
+show_info(){
+  printf  $(tput setaf 2)"%-54s %-10s"$(tput sgr0)"\n" "$@"
+}
+
+show_warn(){
+  printf  $(tput setaf 3)"%-54s %-10s"$(tput sgr0)"\n" "$@"
+}
+
 server_secureboot_delete_keys() {
-    $CURL --globoff  -L -w "%{http_code} %{url_effective}\\n" -ku ${username_password} \
+    $CURL --globoff  -L -w "%{http_code}" -ku ${username_password} \
     -H "Content-Type: application/json" -H "Accept: application/json" \
     -d '{"ResetKeysType":"DeleteAllKeys"}' \
     -X POST  $system_path/SecureBoot/Actions/SecureBoot.ResetKeys 
@@ -70,7 +99,7 @@ server_get_bios_config(){
 server_restart() {
     # Restart
     echo "Restart server."
-    $CURL --globoff  -L -w "%{http_code} %{url_effective}\\n" -ku ${username_password} \
+    $CURL --globoff -L -w "%{http_code}" -ku ${username_password} \
     -H "Content-Type: application/json" -H "Accept: application/json" \
     -d '{"ResetType": "ForceRestart"}' \
     -X POST $system_path/Actions/ComputerSystem.Reset
@@ -78,87 +107,85 @@ server_restart() {
 
 server_power_off() {
     # Power off
-    echo "Power off server."
-    $CURL --globoff  -L -w "%{http_code} %{url_effective}\\n" -ku ${username_password} \
+    local action="Power off Server"
+    rest_result=$($CURL --globoff -L -w "%{http_code}" -ku ${username_password} \
     -H "Content-Type: application/json" -H "Accept: application/json" \
-    -d '{"ResetType": "ForceOff"}' -X POST $system_path/Actions/ComputerSystem.Reset
+    -o "$rest_response" -d '{"ResetType": "ForceOff"}' -X POST $system_path/Actions/ComputerSystem.Reset)
+    check_rest_result "$action" "$rest_result" "$rest_response"
 }
 
 server_power_on() {
     # Power on
-    echo "Power on server."
-    $CURL --globoff  -L -w "%{http_code} %{url_effective}\\n" -ku ${username_password} \
-    -H "Content-Type: application/json" -H "Accept: application/json" \
-    -d '{"ResetType": "On"}' -X POST $system_path/Actions/ComputerSystem.Reset
+    local action="Power on Server"
+    rest_result=$($CURL --globoff  -L -w "%{http_code}" -ku ${username_password} \
+      -H "Content-Type: application/json" -H "Accept: application/json" -d '{"ResetType": "On"}' \
+      -o "$rest_response" -X POST $system_path/Actions/ComputerSystem.Reset)
+    check_rest_result "$action" "$rest_result" "$rest_response"
 }
 
 virtual_media_eject() {
     # Eject Media
-    echo "Eject Virtual Media."
-    $CURL --globoff -L -w "%{http_code} %{url_effective}\\n"  -ku ${username_password} \
-    -H "Content-Type: application/json" -H "Accept: application/json" \
-    -d '{}'  -X POST $virtual_media_path/Actions/VirtualMedia.EjectMedia
+    local action="Eject Virtual Media"
+    rest_result=$($CURL --globoff -L -w "%{http_code}"  -ku ${username_password} \
+      -H "Content-Type: application/json" -H "Accept: application/json" -d '{}' \
+      -o "$rest_response" -X POST $virtual_media_path/Actions/VirtualMedia.EjectMedia)
+    check_rest_result "$action" "$rest_result" "$rest_response"
 }
 
 virtual_media_status(){
     # Media Status
     echo "Virtual Media Status: "
-    $CURL -s --globoff -H "Content-Type: application/json" -H "Accept: application/json" \
-    -k -X GET --user ${username_password} \
-    $virtual_media_path| jq
+    $CURL --globoff -H "Content-Type: application/json" -H "Accept: application/json" \
+      -k -X GET --user ${username_password} \
+      $virtual_media_path| jq
 }
 
 virtual_media_insert(){
     # Insert Media from http server and iso file
-    echo "Insert Virtual Media: $iso_image"
-    $CURL --globoff -L -w "%{http_code} %{url_effective}\\n" -ku ${username_password} \
-    -H "Content-Type: application/json" -H "Accept: application/json" \
-    -d "{\"Image\": \"${iso_image}\"}" \
-    -X POST $virtual_media_path/Actions/VirtualMedia.InsertMedia
+    local action="Insert Virtual Media"
+    rest_result=$($CURL --globoff -L -w "%{http_code}" -ku ${username_password} \
+      -H "Content-Type: application/json" -H "Accept: application/json" -d "{\"Image\": \"${iso_image}\"}" \
+      -o "$rest_response" -X POST $virtual_media_path/Actions/VirtualMedia.InsertMedia)
+    check_rest_result "$action" "$rest_result" "$rest_response"
 }
 
 server_set_boot_once_from_cd() {
     # Set boot
-    echo "Boot node from Virtual Media Once"
-    $CURL --globoff  -L -w "%{http_code} %{url_effective}\\n"  -ku ${username_password}  \
-    -H "Content-Type: application/json" -H "Accept: application/json" \
-    -d '{"Boot":{ "BootSourceOverrideEnabled": "Once", "BootSourceOverrideTarget": "Cd" }}' \
-    -X PATCH $system_path
+    local action="Boot node from Virtual Media Once"
+    rest_result=$($CURL --globoff  -L -w "%{http_code}"  -ku ${username_password}  \
+      -H "Content-Type: application/json" -H "Accept: application/json" \
+      -d '{"Boot":{ "BootSourceOverrideEnabled": "Once", "BootSourceOverrideTarget": "Cd" }}' \
+      -o "$rest_response" -X PATCH $system_path)
+    check_rest_result "$action" "$rest_result" "$rest_response"
+}
+
+check_rest_result() {
+    local action=$1
+    local rest_result=$2
+    local rest_response=$3
+
+    if [[ -n "$rest_result" ]] && [[ $rest_result -lt 300 ]]; then
+      show_info "$action" "$rest_result"
+    else
+      show_warn "$action" "$rest_result"
+      echo $(cat $rest_response)
+    fi
+    rm -f $rest_response
 }
 
 install(){
-  echo "-------------------------------"
-
-  echo "Starting OpenShift deployment..."
-  echo
+  echo "Starting OpenShift deployment on ${bmc_address}..."
   server_power_off
-
   sleep 15
-
-  echo "-------------------------------"
-  echo
   virtual_media_eject
-  echo "-------------------------------"
-  echo
   virtual_media_insert
-  echo "-------------------------------"
-  echo
-  virtual_media_status
-  echo "-------------------------------"
-  echo
+  #virtual_media_status
   server_set_boot_once_from_cd
-  echo "-------------------------------"
-
   sleep 10
-  echo
   server_power_on
   #server_restart
-  echo
-  echo "-------------------------------"
+  echo ""
   echo "Node is booting from virtual media mounted with $iso_image, check your BMC console to monitor the installation progress."
-  echo
-
-  echo "********************************************************"
 }
 
 post_install(){
@@ -166,6 +193,3 @@ post_install(){
 }
 
 $cmd
-
-
-

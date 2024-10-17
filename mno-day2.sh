@@ -1,7 +1,7 @@
 #!/bin/bash
 # 
 # Helper script to apply the day2 operations
-# Usage: ./mno-day2.sh config.yaml
+# Usage: ./mno-day2.sh cluster
 #
 
 if ! type "yq" > /dev/null; then
@@ -15,22 +15,17 @@ if ! type "jinja2" > /dev/null; then
 fi
 
 usage(){
-  echo "Usage: $0 [config.yaml]"
-  echo "Example: $0 config-compact.yaml"
+  echo "Usage : $0 <cluster-name>"
+  echo "If <cluster-name> is not present, it will install the newest cluster created by mno-iso.sh"
+  echo "Example : $0"
+  echo "Example : $0 mno130"
 }
-
-if [ $# -lt 1 ]
-then
-  usage
-  exit
-fi
 
 if [[ ( $@ == "--help") ||  $@ == "-h" ]]
 then 
   usage
   exit
 fi
-
 
 info(){
   printf  $(tput setaf 2)"%-60s %-10s"$(tput sgr0)"\n" "$@"
@@ -44,10 +39,18 @@ basedir="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 operators=$basedir/operators
 manifests=$basedir/extra-manifests
 
-config_file=$1;
+cluster_name=$1; shift
 
-cluster_name=$(yq '.cluster.name' $config_file)
+if [ -z "$cluster_name" ]; then
+  cluster_name=$(ls -t $basedir/instances |head -1)
+  if [ -z "$cluster_name" ]; then
+    echo "No cluster found in $basedir/instances"
+    exit
+  fi
+fi
+
 cluster_workspace=$basedir/instances/$cluster_name
+config_file=$cluster_workspace/config-resolved.yaml
 
 day2_pp_templates=$manifests/day2/performance-profiles
 day2_pp_workspace="$cluster_workspace"/day2/performance-profiles

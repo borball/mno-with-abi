@@ -1,6 +1,6 @@
 #!/bin/bash
 # Helper script to boot the node via redfish API from the ISO image
-# usage: ./mno-install.sh config.yaml
+# usage: ./mno-install.sh cluster 
 #
 
 if ! type "yq" > /dev/null; then
@@ -58,13 +58,13 @@ send_command_to_all_hosts(){
     bmc_address=$(yq ".hosts.masters[$i].bmc.address" $config_file)
     bmc_userpass=$(yq ".hosts.masters[$i].bmc.password" $config_file)
     bmc_uuid=$(yq -r ".hosts.masters[$i].bmc.node_uuid" $config_file)
-    echo "Master $i -> ${bmc_address} : ${bmc_userpass} : ${bmc_uuid} "
+    echo "** Master $i [${bmc_address},${bmc_userpass},${bmc_uuid}]: $cluster_workspace/boot_master_$i.log"
+    boot_option="-l $cluster_workspace/boot_master_$i.log"
     if [[ "true" == "${bmc_noproxy}" ]]; then
-      $basedir/node-boot.sh $command "NOPROXY/${bmc_address}" ${bmc_userpass} ${iso_image} ${bmc_uuid}
-    else
-      $basedir/node-boot.sh $command "${bmc_address}" ${bmc_userpass} ${iso_image} ${bmc_uuid}
+      boot_option+=" -n"
     fi
-
+    $basedir/node-boot.sh -c $command -n -h ${bmc_address} -u ${bmc_userpass} -i ${iso_image} ${bmc_uuid:+"-k $bmc_uuid"} $boot_option
+    echo ""
   done
 
   if [ ! -z "$(yq '.hosts.workers' $config_file)" ]; then
@@ -73,12 +73,13 @@ send_command_to_all_hosts(){
       bmc_address=$(yq ".hosts.workers[$i].bmc.address" $config_file)
       bmc_userpass=$(yq ".hosts.workers[$i].bmc.password" $config_file)
       bmc_uuid=$(yq -r ".hosts.workers[$i].bmc.node_uuid" $config_file)
-      echo "Worker $i -> ${bmc_address} : ${bmc_userpass} : ${bmc_uuid} "
-    if [[ "true" == "${bmc_noproxy}" ]]; then
-      $basedir/node-boot.sh $command "NOPROXY/${bmc_address}" ${bmc_userpass} ${iso_image} ${bmc_uuid}
-    else
-      $basedir/node-boot.sh $command "${bmc_address}" ${bmc_userpass} ${iso_image} ${bmc_uuid}
-    fi
+      echo "** Worker $i [${bmc_address},${bmc_userpass},${bmc_uuid}]: $cluster_workspace/boot_worker_$i.log"
+      boot_option="-l $cluster_workspace/boot_worker_$i.log"
+      if [[ "true" == "${bmc_noproxy}" ]]; then
+        boot_option+=" -n"
+      fi
+      $basedir/node-boot.sh -c $command -n -h ${bmc_address} -u ${bmc_userpass} -i ${iso_image} ${bmc_uuid:+"-k $bmc_uuid"} $boot_option
+      echo ""
     done
   fi
 
@@ -96,10 +97,39 @@ deploy_iso(){
   fi
 }
 
+wait_for_stable_cluster(){
+  local interval=${1:-60}
+  local next_run=0
+  local skipped=""
+  set +e
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    local current=$(date +%s --date="now")
+    if [[ $current -gt $next_run ]]; then
+      if [[ ! -z "$skipped" ]]; then
+        echo
+        skipped=""
+      fi
+      echo $line
+      let next_run=$current+$interval
+     else
+       echo -n .
+       skipped="$line"
+     fi
+  done < <(oc adm wait-for-stable-cluster --minimum-stable-period=5m  2>&1)
+  set -e
+  if [[ ! -z "$skipped" ]]; then
+    echo
+    echo $skipped
+  fi
+}
+
 echo "-------------------------------"
 deploy_iso
 
 SECONDS=0
+echo ""
+echo "-------------------------------"
 send_command_to_all_hosts install
 
 ipv4_enabled=$(yq '.hosts.common.ipv4.enabled // "" ' $config_file)
@@ -163,4 +193,4 @@ echo "Installation still in progress, oc command will be available soon, you can
 echo
 echo "Waiting for the cluster to be ready..."
 sleep 180
-oc adm wait-for-stable-cluster
+wait_for_stable_cluster 60

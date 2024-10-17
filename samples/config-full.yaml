@@ -136,40 +136,40 @@ day1:
   operators:
     ptp:
       enabled: false
-      source: redhat-operators
+      source: cs-redhat-operator-index
     sriov:
       enabled: true
-      source: redhat-operators
+      source: cs-redhat-operator-index
     local-storage:
       enabled: true
-      source: redhat-operators
+      source: cs-redhat-operator-index
     lvm:
       enabled: false
-      source: redhat-operators
+      source: cs-redhat-operator-index
     odf:
       enabled: true
-      source: redhat-operators
+      source: cs-redhat-operator-index
     rhacm:
       enabled: false
-      source: redhat-operators
+      source: cs-redhat-operator-index
     mce:
       enabled: false
-      source: redhat-operators
+      source: cs-redhat-operator-index
     gitops:
       enabled: false
-      source: redhat-operators
+      source: cs-redhat-operator-index
     talm:
       enabled: false
-      source: redhat-operators
+      source: cs-redhat-operator-index
     nmstate:
       enabled: true
-      source: redhat-operators
+      source: cs-redhat-operator-index
     metallb:
       enabled: true
-      source: redhat-operators
+      source: cs-redhat-operator-index
     cluster-logging:
       enabled: false
-      source: redhat-operators
+      source: cs-redhat-operator-index
 
 day2:
   node_labels_enabled: true
