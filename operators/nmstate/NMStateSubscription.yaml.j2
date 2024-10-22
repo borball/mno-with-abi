@@ -6,7 +6,11 @@ metadata:
   name: kubernetes-nmstate-operator
   namespace: openshift-nmstate
 spec:
+  {% if channel is defined -%}
+  channel: {{ channel }}
+  {% else -%}
   channel: stable
+  {%- endif %}
   installPlanApproval: Automatic
   name: kubernetes-nmstate-operator
   {% if source is defined -%}

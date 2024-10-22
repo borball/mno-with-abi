@@ -5,6 +5,9 @@ metadata:
   namespace: openshift-storage
 spec:
   name: lvms-operator
+  {% if channel is defined -%}
+  channel: {{ channel }}
+  {%- endif %}
   {% if source is defined -%}
   source: {{ source }}
   {% else -%}

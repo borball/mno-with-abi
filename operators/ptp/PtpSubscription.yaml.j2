@@ -5,7 +5,11 @@ metadata:
   name: ptp-operator-subscription
   namespace: openshift-ptp
 spec:
-  channel: "stable"
+  {% if channel is defined -%}
+  channel: {{ channel }}
+  {% else -%}
+  channel: stable
+  {%- endif %}
   name: ptp-operator
   {% if source is defined -%}
   source: {{ source }}

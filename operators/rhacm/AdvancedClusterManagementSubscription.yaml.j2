@@ -7,6 +7,9 @@ metadata:
 spec:
   installPlanApproval: Automatic
   name: advanced-cluster-management
+  {% if channel is defined -%}
+  channel: {{ channel }}
+  {%- endif %}
   {% if source is defined -%}
   source: {{ source }}
   {% else -%}

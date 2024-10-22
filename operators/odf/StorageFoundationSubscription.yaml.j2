@@ -4,7 +4,11 @@ metadata:
   name: odf-operator
   namespace: openshift-storage
 spec:
+  {% if channel is defined -%}
+  channel: {{ channel }}
+  {% else -%}
   channel: "stable-{{ environ('ocp_y_release') }}"
+  {%- endif %}
   name: odf-operator
   {% if source is defined -%}
   source: {{ source }}

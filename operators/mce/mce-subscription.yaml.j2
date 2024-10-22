@@ -5,6 +5,9 @@ metadata:
   namespace: multicluster-engine
 spec:
   name: multicluster-engine
+  {% if channel is defined -%}
+  channel: {{ channel }}
+  {%- endif %}
   {% if source is defined -%}
   source: {{ source }}
   {% else -%}

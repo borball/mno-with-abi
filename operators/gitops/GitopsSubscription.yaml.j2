@@ -5,6 +5,9 @@ metadata:
   name: openshift-gitops-operator
   namespace: openshift-operators
 spec:
+  {% if channel is defined -%}
+  channel: {{ channel }}
+  {%- endif %}
   installPlanApproval: Automatic
   name: openshift-gitops-operator
   {% if source is defined -%}

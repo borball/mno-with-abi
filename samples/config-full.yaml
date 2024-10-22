@@ -137,40 +137,56 @@ day1:
     ptp:
       enabled: false
       source: cs-redhat-operator-index
+      # if channel not present, will use 'stable'
+      #channel:
       #version: ptp-operator.4.12.0-202402081808
     sriov:
       enabled: true
       source: cs-redhat-operator-index
+      # if channel not present, will use 'stable'
+      #channel:
       # if version not present, will use latest version
       #version:
     local-storage:
       enabled: true
       source: cs-redhat-operator-index
+      # if channel not present, will use 'stable'
+      #channel:
       # if version not present, will use latest version
       #version:
     lvm:
       enabled: false
       source: cs-redhat-operator-index
+      # if channel not present, will use default one in the catalog
+      #channel:
       # if version not present, will use latest version
       #version:
     odf:
       enabled: true
       source: cs-redhat-operator-index
+      # if channel not present, will use 'stable-OCP-Y'
+      #channel:
       # if version not present, will use latest version
       #version:
     rhacm:
       enabled: false
       source: cs-redhat-operator-index
+      # if channel not present, will use default one in the catalog
+      #channel:
       # if version not present, will use latest version
       #version:
     mce:
       enabled: false
       source: cs-redhat-operator-index
+      # if channel not present, will use 'stable'
+      #channel:
       # if version not present, will use latest version
       #version:
     gitops:
       enabled: false
       source: cs-redhat-operator-index
+      # if channel not present, will use default one in the catalog
+      #channel:
       # if version not present, will use latest version
       #version:
     talm:
