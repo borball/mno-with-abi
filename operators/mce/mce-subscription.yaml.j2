@@ -4,7 +4,6 @@ metadata:
   name: multicluster-engine
   namespace: multicluster-engine
 spec:
-  installPlanApproval: Automatic
   name: multicluster-engine
   {% if source is defined -%}
   source: {{ source }}
@@ -12,3 +11,9 @@ spec:
   source: redhat-operators
   {%- endif %}
   sourceNamespace: openshift-marketplace
+  {% if version is defined -%}
+  startingCSV: {{ version }}
+  installPlanApproval: Manual
+  {% else -%}
+  installPlanApproval: Automatic
+  {%- endif %}

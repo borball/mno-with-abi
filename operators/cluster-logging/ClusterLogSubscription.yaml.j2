@@ -12,4 +12,9 @@ spec:
   source: redhat-operators
   {%- endif %}
   sourceNamespace: openshift-marketplace
+  {% if version is defined -%}
+  startingCSV: {{ version }}
+  installPlanApproval: Manual
+  {% else -%}
   installPlanApproval: Automatic
+  {%- endif %}

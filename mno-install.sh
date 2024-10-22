@@ -124,6 +124,29 @@ wait_for_stable_cluster(){
   fi
 }
 
+approve_pending_install_plans(){
+  echo "Approve pending approval InstallPlans if have, will repeat 5 times."
+  for i in {1..5}; do
+    echo "checking $i"
+    oc get ip -A
+    while read -s IP; do
+      echo "oc patch $IP --type merge --patch '{"spec":{"approved":true}}'"
+      oc patch $IP --type merge --patch '{"spec":{"approved":true}}'
+    done < <(oc get sub -A -o json |jq -r '.items[]|select( (.spec.startingCSV != null) and (.status.installedCSV == null) )|.status.installPlanRef|"-n \(.namespace) ip \(.name)"')
+
+    if [[ 0 ==  $(oc get sub -A -o json|jq '[.items[]|select(.status.installedCSV==null)]|length') ]]; then
+      echo
+      break
+    fi
+
+    sleep 30
+    echo
+  done
+
+  echo "All operator versions:"
+  oc get csv -A -o custom-columns="0AME:.metadata.name,DISPLAY:.spec.displayName,VERSION:.spec.version" |sort -f|uniq|sed 's/0AME/NAME/'
+}
+
 echo "-------------------------------"
 deploy_iso
 
@@ -194,3 +217,7 @@ echo
 echo "Waiting for the cluster to be ready..."
 sleep 180
 wait_for_stable_cluster 60
+
+approve_pending_install_plans
+echo
+echo "You are all set..."
