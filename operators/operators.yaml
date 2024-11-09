@@ -35,3 +35,7 @@ operators:
   cluster-logging:
     name: cluster-logging
     desc: OpenShift Logging Operator
+  kubevirt-hyperconverged:
+    name: kubevirt-hyperconverged
+    desc: OpenShift Virtualization
+    enabled: false

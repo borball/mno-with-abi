@@ -209,7 +209,11 @@ day1:
       source: cs-redhat-operator-index
       # if version not present, will use latest version
       #version:
-
+    kubevirt-hyperconverged:
+      enabled: false
+      #channel: stable
+      #set the version
+      #version: v4.16.3
 day2:
   node_labels_enabled: true
   disable_operator_auto_upgrade: true

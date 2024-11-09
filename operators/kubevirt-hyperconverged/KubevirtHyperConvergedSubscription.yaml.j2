@@ -1,0 +1,15 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: kubevirt-hyperconverged-sub
+  namespace: openshift-cnv
+spec:
+  name: kubevirt-hyperconverged
+  source: {{ source | default('redhat-operators') }}
+  sourceNamespace: openshift-marketplace
+  {% if version is defined -%}
+  startingCSV: {{ version }}
+  installPlanApproval: Manual
+  {% else -%}
+  installPlanApproval: Automatic
+  {%- endif %}
