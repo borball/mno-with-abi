@@ -4,11 +4,10 @@ kind: CatalogSource
 metadata:
   name: redhat-operators
   namespace: openshift-marketplace
+  annotations:
+    target.workload.openshift.io/management: '{"effect": "PreferredDuringScheduling"}'
 spec:
   displayName: Red Hat Operators
   image: registry.redhat.io/redhat/redhat-operator-index:v{{ environ('ocp_y_release') }}
   publisher: Red Hat
   sourceType: grpc
-  updateStrategy:
-    registryPoll:
-      interval: 24h

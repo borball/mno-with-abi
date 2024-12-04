@@ -4,6 +4,8 @@ kind: CatalogSource
 metadata:
   name: {{ name }}
   namespace: openshift-marketplace
+  annotations:
+    target.workload.openshift.io/management: '{"effect": "PreferredDuringScheduling"}'
 spec:
   displayName: {{ display }}
   image: {{ image }}
