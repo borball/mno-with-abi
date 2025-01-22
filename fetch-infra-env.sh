@@ -56,11 +56,16 @@ fi
 
 export KUBECONFIG=$cluster_workspace/auth/kubeconfig
 
+api_token=$(jq -r '.["*gencrypto.AuthConfig"].AgentAuthToken // empty' $cluster_workspace/.openshift_install_state.json)
 bmc_noproxy=$(yq ".hosts.common.bmc.bypass_proxy" $config_file)
 
 REMOTE_CURL="curl -s"
 if [[ "true"=="${bmc_noproxy}" ]]; then
   REMOTE_CURL+=" --noproxy ${rendezvousIP}"
+fi
+
+if [[ ! -z "${api_token}" ]]; then
+  REMOTE_CURL+=" -H 'Authorization: ${api_token}'"
 fi
 
 echo "-------------------------------"

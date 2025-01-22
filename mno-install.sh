@@ -47,6 +47,7 @@ config_file=$cluster_workspace/config-resolved.yaml
 total_master=$(yq '.hosts.masters|length' $config_file)
 iso_image=$(yq '.iso.address' $config_file)
 deploy_cmd=$(eval echo $(yq '.iso.deploy // ""' $config_file))
+api_token=$(jq -r '.["*gencrypto.AuthConfig"].AgentAuthToken // empty' $cluster_workspace/.openshift_install_state.json)
 
 export KUBECONFIG=$cluster_workspace/auth/kubeconfig
 
@@ -168,6 +169,10 @@ fi
 REMOTE_CURL="curl -s"
 if [[ "true"=="${bmc_noproxy}" ]]; then
   REMOTE_CURL+=" --noproxy ${rendezvousIP}"
+fi
+
+if [[ ! -z "${api_token}" ]]; then
+  REMOTE_CURL+=" -H 'Authorization: ${api_token}'"
 fi
 
 while [[ "$($REMOTE_CURL -o /dev/null -w ''%{http_code}'' $assisted_rest)" != "200" ]]; do
