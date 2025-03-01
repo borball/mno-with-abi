@@ -64,8 +64,6 @@ total_master=$(yq '.hosts.masters|length' $config_file)
 iso_image=$(yq '.iso.address' $config_file)
 deploy_cmd=$(eval echo $(yq '.iso.deploy // ""' $config_file))
 
-domain_name=$(yq '.cluster.domain' $config_file)
-api_fqdn="api."$cluster_name"."$domain_name
 api_token=$(jq -r '.["*gencrypto.AuthConfig"].UserAuthToken // empty' $cluster_workspace/.openshift_install_state.json)
 if [[ -z "${api_token}" ]]; then
   api_token=$(jq -r '.["*gencrypto.AuthConfig"].AgentAuthToken // empty' $cluster_workspace/.openshift_install_state.json)
@@ -196,6 +194,8 @@ fi
 if [[ ! -z "${api_token}" ]]; then
   REMOTE_CURL+=" -H 'Authorization: ${api_token}'"
 fi
+
+echo $REMOTE_CURL
 
 while [[ "$($REMOTE_CURL -o /dev/null -w ''%{http_code}'' $assisted_rest)" != "200" ]]; do
   echo -n "."
