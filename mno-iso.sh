@@ -99,7 +99,7 @@ if [ $(cat $config_file_input |grep -E 'OCP_Y_RELEASE|OCP_Z_RELEASE' |wc -l) -gt
 else
   cp $config_file_input $config_file
 fi
-echo "Will use $config_file as the configuration in other sno-* scripts."
+echo "Will use $config_file as the configuration in other mno-* scripts."
 
 if [ ! -f $basedir/openshift-install-linux.$ocp_release_version.tar.gz ]; then
   echo "You are going to download OpenShift installer $ocp_release: ${ocp_release_version}"
