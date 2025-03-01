@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 cmd="install"
 bmc_noproxy=0
 CURL="curl -s"

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cluster="hub"
-version=4.18.1
+version=4.18.2
 
 basedir="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 root_path="$( cd "$(dirname "$0")/../.." >/dev/null 2>&1 ; pwd -P )"
@@ -21,7 +21,7 @@ install_ocp(){
   $iso $config $version
   cp $mno_workspace/agent.x86_64.iso /var/www/html/iso/$cluster.iso
   cp $mno_workspace/auth/kubeconfig /root/workload-enablement/kubeconfigs/kubeconfig-$cluster.yaml
-  $install $config
+  $install
 }
 
 $basedir/create-kvms.sh
