@@ -96,6 +96,7 @@ day1:
       enabled: true
     odf:
       enabled: true
+      channel: stable-4.17
     rhacm:
       enabled: true
     gitops:
