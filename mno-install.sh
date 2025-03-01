@@ -66,9 +66,9 @@ deploy_cmd=$(eval echo $(yq '.iso.deploy // ""' $config_file))
 
 domain_name=$(yq '.cluster.domain' $config_file)
 api_fqdn="api."$cluster_name"."$domain_name
-api_token=$(jq -r '.["*gencrypto.AuthConfig"].UserAuthToken // empty' $cluster_workspace/.openshift_install_state.json)
+api_token=$(jq -r '.["*gencrypto.AuthConfig"].AgentAuthToken // empty' $cluster_workspace/.openshift_install_state.json)
 if [[ -z "${api_token}" ]]; then
-  api_token=$(jq -r '.["*gencrypto.AuthConfig"].AgentAuthToken // empty' $cluster_workspace/.openshift_install_state.json)
+  api_token=$(jq -r '.["*gencrypto.AuthConfig"].UserAuthToken // empty' $cluster_workspace/.openshift_install_state.json)
 fi
 
 export KUBECONFIG=$cluster_workspace/auth/kubeconfig
