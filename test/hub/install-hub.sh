@@ -21,7 +21,7 @@ install_ocp(){
   $iso $config $version
   cp $mno_workspace/agent.x86_64.iso /var/www/html/iso/$cluster.iso
   cp $mno_workspace/auth/kubeconfig /root/workload-enablement/kubeconfigs/kubeconfig-$cluster.yaml
-  $install $config
+  $install
 }
 
 $basedir/create-kvms.sh
