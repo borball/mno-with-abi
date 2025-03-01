@@ -84,7 +84,7 @@ send_command_to_all_hosts(){
     if [[ "true" == "${bmc_noproxy}" ]]; then
       boot_option+=" -n"
     fi
-    $basedir/node-boot.sh -c $command -n -h ${bmc_address} -u ${bmc_userpass} -i ${iso_image} ${bmc_uuid:+"-k $bmc_uuid"} $boot_option
+    $basedir/node-boot.sh -c $command -n -h ${bmc_address} -u ${bmc_userpass} -i ${iso_image} ${bmc_uuid:+"-k$bmc_uuid"} $boot_option
     echo ""
   done
 
@@ -99,7 +99,7 @@ send_command_to_all_hosts(){
       if [[ "true" == "${bmc_noproxy}" ]]; then
         boot_option+=" -n"
       fi
-      $basedir/node-boot.sh -c $command -n -h ${bmc_address} -u ${bmc_userpass} -i ${iso_image} ${bmc_uuid:+"-k $bmc_uuid"} $boot_option
+      $basedir/node-boot.sh -c $command -n -h ${bmc_address} -u ${bmc_userpass} -i ${iso_image} ${bmc_uuid:+"-k$bmc_uuid"} $boot_option
       echo ""
     done
   fi
