@@ -186,7 +186,9 @@ else
   assisted_rest=http://[$rendezvousIP]:8090/api/assisted-install/v2/clusters
 fi
 
-REMOTE_CURL="curl -s"
+SSH_CMD="ssh -q -oStrictHostKeyChecking=no"
+REMOTE_CURL="$SSH_CMD core@$rendezvousIP curl -s"
+
 if [[ "true"=="${bmc_noproxy}" ]]; then
   REMOTE_CURL+=" --noproxy ${rendezvousIP}"
 fi
