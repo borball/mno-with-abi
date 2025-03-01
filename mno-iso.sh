@@ -127,14 +127,18 @@ fi
 
 enable_crun(){
   if [ "4.12" = $ocp_y_release ]; then
-    warn "Container runtime crun(4.13+):" "disabled"
+    warn "Container runtime crun(4.12):" "disabled"
   else
-    #4.13+ by default enabled.
-    if [ "false" = "$(yq '.day1.crun' $config_file)" ]; then
-      warn "Container runtime crun(4.13+):" "disabled"
+    if [ "4.13" = $ocp_y_release ] || [ "4.14" = $ocp_y_release ] || [ "4.15" = $ocp_y_release ] || [ "4.16" = $ocp_y_release ] || [ "4.17" = $ocp_y_release ]; then
+      #4.13+ by default enabled.
+      if [ "false" = "$(yq '.day1.crun' $config_file)" ]; then
+        warn "Container runtime crun(4.13-4.17):" "disabled"
+      else
+        info "Container runtime crun(4.13-4.17):" "enabled"
+        cp $templates/day1/crun/*.yaml $cluster_workspace/openshift/
+      fi
     else
-      info "Container runtime crun(4.13+):" "enabled"
-      cp $templates/day1/crun/*.yaml $cluster_workspace/openshift/
+      info "Container runtime crun(4.18+):" "default"
     fi
   fi
 }
