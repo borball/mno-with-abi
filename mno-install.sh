@@ -13,6 +13,13 @@ if ! type "jinja2" > /dev/null; then
   pip3 install --user jinja2-cli[yaml]
 fi
 
+show_info(){
+  printf  $(tput setaf 2)"%-54s %-10s"$(tput sgr0)"\n" "$@"
+}
+
+show_warn(){
+  printf  $(tput setaf 3)"%-54s %-10s"$(tput sgr0)"\n" "$@"
+}
 
 usage(){
   echo "Usage : $0 <cluster-name>"
@@ -42,12 +49,25 @@ set -euoE pipefail
 set -o nounset
 
 cluster_workspace=$basedir/instances/$cluster_name
+
 config_file=$cluster_workspace/config-resolved.yaml
+if [ -f "$config_file" ]; then
+  echo "Will install cluster $cluster_name with config: $config_file"
+else
+  "Config file $config_file not exist, please check."
+  exit -1
+fi
 
 total_master=$(yq '.hosts.masters|length' $config_file)
 iso_image=$(yq '.iso.address' $config_file)
 deploy_cmd=$(eval echo $(yq '.iso.deploy // ""' $config_file))
-api_token=$(jq -r '.["*gencrypto.AuthConfig"].AgentAuthToken // empty' $cluster_workspace/.openshift_install_state.json)
+
+domain_name=$(yq '.cluster.domain' $config_file)
+api_fqdn="api."$cluster_name"."$domain_name
+api_token=$(jq -r '.["*gencrypto.AuthConfig"].UserAuthToken // empty' $cluster_workspace/.openshift_install_state.json)
+if [[ -z "${api_token}" ]]; then
+  api_token=$(jq -r '.["*gencrypto.AuthConfig"].AgentAuthToken // empty' $cluster_workspace/.openshift_install_state.json)
+fi
 
 export KUBECONFIG=$cluster_workspace/auth/kubeconfig
 
