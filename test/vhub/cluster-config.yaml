@@ -45,7 +45,7 @@ hosts:
       interface: ens1f0
       mac: b4:96:91:b4:6a:80
       ipv4:
-        ip: 192.168.13.149
+        ip: 192.168.58.49
       bmc:
         address: 192.168.13.149
         password: Administrator:superuser
