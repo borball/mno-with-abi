@@ -76,7 +76,7 @@ send_command_to_all_hosts(){
   for ((i=0; i<$total_master;i++)); do
     bmc_address=$(yq ".hosts.masters[$i].bmc.address" $config_file)
     bmc_userpass=$(yq ".hosts.masters[$i].bmc.password" $config_file)
-    bmc_uuid=$(yq -r ".hosts.masters[$i].bmc.node_uuid" $config_file)
+    bmc_uuid=$(yq -r ".hosts.masters[$i].bmc.node_uuid //''" $config_file)
     echo "** Master $i [${bmc_address},${bmc_userpass},${bmc_uuid}]: $cluster_workspace/boot_master_$i.log"
     boot_option="-l $cluster_workspace/boot_master_$i.log"
     if [[ "true" == "${bmc_noproxy}" ]]; then
@@ -91,7 +91,7 @@ send_command_to_all_hosts(){
     for ((i=0; i<$total_worker;i++)); do
       bmc_address=$(yq ".hosts.workers[$i].bmc.address" $config_file)
       bmc_userpass=$(yq ".hosts.workers[$i].bmc.password" $config_file)
-      bmc_uuid=$(yq -r ".hosts.workers[$i].bmc.node_uuid" $config_file)
+      bmc_uuid=$(yq -r ".hosts.workers[$i].bmc.node_uuid //''" $config_file)
       echo "** Worker $i [${bmc_address},${bmc_userpass},${bmc_uuid}]: $cluster_workspace/boot_worker_$i.log"
       boot_option="-l $cluster_workspace/boot_worker_$i.log"
       if [[ "true" == "${bmc_noproxy}" ]]; then
