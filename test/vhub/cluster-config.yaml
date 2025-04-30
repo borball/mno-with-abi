@@ -26,6 +26,9 @@ hosts:
 
   masters:
     - hostname: master0.vhub.outbound.vz.bos2.lab
+      labels:
+        # marked for providing disk for ODF deployment
+        - cluster.ocs.openshift.io/openshift-storage=
       interface: ens1f0
       mac: b4:96:91:b6:12:a8
       ipv4:
@@ -34,6 +37,9 @@ hosts:
         address: 192.168.13.147
         password: Administrator:superuser
     - hostname: master1.vhub.outbound.vz.bos2.lab
+      labels:
+        # marked for providing disk for ODF deployment
+        - cluster.ocs.openshift.io/openshift-storage=
       interface: ens1f0
       mac: b4:96:91:b4:9d:f0
       ipv4:
@@ -42,6 +48,9 @@ hosts:
         address: 192.168.13.148
         password: Administrator:superuser
     - hostname: master2.vhub.outbound.vz.bos2.lab
+      labels:
+        # marked for providing disk for ODF deployment
+        - cluster.ocs.openshift.io/openshift-storage=
       interface: ens1f0
       mac: b4:96:91:b4:6a:80
       ipv4:
@@ -49,6 +58,28 @@ hosts:
       bmc:
         address: 192.168.13.149
         password: Administrator:superuser
+
+day1:
+  operators:
+    odf:
+      enabled: true
+    kubevirt-hyperconverged:
+      enabled: true
+    sriov:
+      enabled: true
+
+day2:
+  node_labels_enabled: true
+  operators:
+    local-storage: {}
+    odf:
+      # for dual stack, set to true
+      # other wise, set to false and specify the ip_family IPv6 or IPv4
+      dual_stack: false
+      ip_family: IPv4
+      # number of storage device in the storage device set
+      # should be number of node marked for providing disk for ODF
+      storage_device_count: 3
 
 pull_secret: /root/pull-secret.json
 ssh_key: /root/.ssh/id_rsa.pub
