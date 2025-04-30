@@ -5,6 +5,7 @@ metadata:
   namespace: openshift-cnv
 spec:
   name: kubevirt-hyperconverged
+  channel: {{ channel | default('stable') }}
   source: {{ source | default('redhat-operators') }}
   sourceNamespace: openshift-marketplace
   {% if version is defined -%}
