@@ -153,7 +153,7 @@ cp instances/my-cluster/agent.x86_64.iso /var/www/html/iso/my-cluster.iso
 ### 4. Day 2 Operations (Optional)
 
 ```bash
-./mno-day2.sh my-cluster.yaml
+./mno-day2.sh my-cluster
 ```
 
 ## Detailed Configuration
@@ -227,7 +227,7 @@ hosts:
       bmc:
         address: 192.168.1.110:443
         password: admin:password123
-        node_uuid: 12345678-1234-5678-9abc-123456789abc  # Optional
+        node_uuid: 12345678-1234-5678-9abc-123456789abc #optional, only used together with shushy-tools 
 ```
 
 **Worker Nodes:**
@@ -462,8 +462,7 @@ hosts:
     - bmc:
         address: 192.168.1.110:443
         password: admin:password123
-        node_uuid: 12345678-1234-5678-9abc-123456789abc
-        vendor: dell  # dell, hp, lenovo, supermicro
+        node_uuid: 12345678-1234-5678-9abc-123456789abc #optional, only used together with shushy-tools 
 ```
 
 ## Scripts Reference
@@ -525,7 +524,7 @@ hosts:
 
 **Usage**:
 ```bash
-./mno-day2.sh config.yaml
+./mno-day2.sh my-cluster
 ```
 
 **Features**:
