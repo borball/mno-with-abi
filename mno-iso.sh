@@ -185,6 +185,12 @@ apply_extra_manifests(){
   fi
 }
 
+set_core_user_password(){
+  if [ "true" = "$(yq '.day1.set_core_user_password' $config_file)" ]; then
+    cp $templates/day1/passwd/mc-core-user-password.yaml $cluster_workspace/openshift/mc-core-user-password.yaml
+  fi
+}
+
 operator_catalog_sources(){
   if [ "4.12" = $ocp_y_release ] || [ "4.13" = $ocp_y_release ] || [ "4.14" = $ocp_y_release ] || [ "4.15" = $ocp_y_release ]; then
     if [[ $(yq '.container_registry' $config_file) != "null" ]]; then
@@ -234,6 +240,7 @@ operator_catalog_sources(){
 }
 
 operator_catalog_sources
+set_core_user_password
 enable_crun
 install_operators
 apply_extra_manifests

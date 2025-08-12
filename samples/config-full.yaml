@@ -133,6 +133,7 @@ proxy:
 
 day1:
   crun: false
+  #set_core_user_password: true
   operators:
     ptp:
       enabled: false
