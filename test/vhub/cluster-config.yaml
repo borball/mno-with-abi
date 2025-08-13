@@ -71,6 +71,8 @@ hosts:
 
 day1:
   operators:
+    local-storage:
+      enabled: true
     odf:
       enabled: true
     kubevirt-hyperconverged:
