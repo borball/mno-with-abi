@@ -90,6 +90,7 @@ day2:
       # number of storage device in the storage device set
       # should be number of node marked for providing disk for ODF
       storage_device_count: 3
+    kubevirt-hyperconverged: {}
 
 pull_secret: /root/pull-secret.json
 ssh_key: /root/.ssh/id_rsa.pub
