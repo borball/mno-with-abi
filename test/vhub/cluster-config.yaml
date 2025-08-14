@@ -79,10 +79,13 @@ day1:
       enabled: true
     sriov:
       enabled: true
+    nmstate:
+      enabled: true
 
 day2:
   node_labels_enabled: true
   operators:
+    nmstate: {}
     local-storage: {}
     odf:
       # for dual stack, set to true
