@@ -147,7 +147,7 @@ approve_pending_install_plans(){
   echo "Approve pending approval InstallPlans if have, will repeat 5 times."
   for i in {1..5}; do
     echo "checking $i"
-    oc get ip -A
+    oc get installplan -A
     while read -s IP; do
       echo "oc patch $IP --type merge --patch '{"spec":{"approved":true}}'"
       oc patch $IP --type merge --patch '{"spec":{"approved":true}}'
