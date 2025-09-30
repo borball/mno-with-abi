@@ -81,6 +81,12 @@ day1:
       enabled: true
     nmstate:
       enabled: true
+    rhacm:
+      enabled: true
+    gitops:
+      enabled: true
+    talm:
+      enabled: true
 
 day2:
   node_labels_enabled: true
