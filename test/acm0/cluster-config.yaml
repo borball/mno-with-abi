@@ -78,15 +78,14 @@ day1:
     kubevirt-hyperconverged:
       enabled: true
     sriov:
-      enabled: true
+      enabled: false
     nmstate:
-      enabled: true
+      enabled: false
     rhacm:
       enabled: true
-      channel: release-2.13
+      channel: release-2.15
     gitops:
       enabled: true
-      channel: gitops-1.17
     talm:
       enabled: true
 
