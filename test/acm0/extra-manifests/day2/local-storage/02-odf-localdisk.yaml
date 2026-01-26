@@ -1,0 +1,31 @@
+# local volumeset needed for ODF
+apiVersion: local.storage.openshift.io/v1alpha1
+kind: LocalVolumeSet
+metadata:
+  name: odf-localdisk
+  namespace: openshift-local-storage
+spec:
+  deviceInclusionSpec:
+    # use disk instead of partition
+    deviceTypes:
+    - disk
+    # minimum disk size
+    minSize: 100Gi
+  # only create PV on storage node
+  nodeSelector:
+    nodeSelectorTerms:
+      - matchExpressions:
+          - key: cluster.ocs.openshift.io/openshift-storage
+            operator: In
+            values:
+              - ""
+  storageClassName: odf-localdisk
+  tolerations:
+  - effect: NoSchedule
+    key: node.ocs.openshift.io/storage
+    operator: Equal
+    value: "true"
+  volumeMode: Block
+  fstype: ext4
+  # maximum one disk per node
+  maxDeviceCount: 1

@@ -1,6 +1,6 @@
 cluster:
   domain: outbound.vz.bos2.lab
-  name: vhub
+  name: acm0
   apiVIPs:
     - 192.168.58.90
     - 2600:52:7:58::90
@@ -29,7 +29,7 @@ hosts:
     disk: /dev/nvme0n1
 
   masters:
-    - hostname: master0.vhub.outbound.vz.bos2.lab
+    - hostname: master0.acm0.outbound.vz.bos2.lab
       labels:
         # marked for providing disk for ODF deployment
         - cluster.ocs.openshift.io/openshift-storage=
@@ -42,7 +42,7 @@ hosts:
       bmc:
         address: 192.168.13.147
         password: Administrator:superuser
-    - hostname: master1.vhub.outbound.vz.bos2.lab
+    - hostname: master1.acm0.outbound.vz.bos2.lab
       labels:
         # marked for providing disk for ODF deployment
         - cluster.ocs.openshift.io/openshift-storage=
@@ -55,7 +55,7 @@ hosts:
       bmc:
         address: 192.168.13.148
         password: Administrator:superuser
-    - hostname: master2.vhub.outbound.vz.bos2.lab
+    - hostname: master2.acm0.outbound.vz.bos2.lab
       labels:
         # marked for providing disk for ODF deployment
         - cluster.ocs.openshift.io/openshift-storage=
@@ -109,4 +109,4 @@ pull_secret: /root/pull-secret.json
 ssh_key: /root/.ssh/id_rsa.pub
 
 iso:
-  address: http://192.168.58.15/iso/vhub.iso
+  address: http://192.168.58.16/iso/acm0.iso
