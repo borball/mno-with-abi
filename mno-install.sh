@@ -106,9 +106,10 @@ send_command_to_all_hosts(){
 
 deploy_iso(){
   [[ -z "$deploy_cmd" ]] && return
-  [[ ! -x $(realpath $deploy_cmd) ]] && echo "Failed to deploy ISO, command not executable: $deploy_cmd" && exit
-  echo "Deploy ISO: $deploy_cmd $cluster_workspace/agent.x86_64.iso $iso_image"
-  $deploy_cmd $cluster_workspace/agent.x86_64.iso $iso_image
+  [[ ! -x $(cd "$(dirname "$deploy_cmd")" && pwd -P)/$(basename "$deploy_cmd") ]] && echo "Failed to deploy ISO, command not executable: $deploy_cmd" && exit
+  local iso_file=$(ls $cluster_workspace/agent.*.iso 2>/dev/null | head -1)
+  echo "Deploy ISO: $deploy_cmd $iso_file $iso_image"
+  $deploy_cmd $iso_file $iso_image
   local result=$?
   if [[ $result -ne 0 ]]; then
     echo "Failed: $result"
@@ -123,7 +124,7 @@ wait_for_stable_cluster(){
   set +e
   while IFS= read -r line; do
     [[ -z "$line" ]] && continue
-    local current=$(date +%s --date="now")
+    local current=$(date +%s)
     if [[ $current -gt $next_run ]]; then
       if [[ ! -z "$skipped" ]]; then
         echo
@@ -164,7 +165,7 @@ approve_pending_install_plans(){
   done
 
   echo "All operator versions:"
-  oc get csv -A -o custom-columns="0AME:.metadata.name,DISPLAY:.spec.displayName,VERSION:.spec.version" |sort -f|uniq|sed 's/0AME/NAME/'
+  oc get csv -A -o custom-columns="0AME:.metadata.name,DISPLAY:.spec.displayName,VERSION:.spec.version" |sort|uniq|sed 's/0AME/NAME/'
 }
 
 echo "-------------------------------"

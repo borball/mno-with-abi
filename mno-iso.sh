@@ -60,6 +60,40 @@ operators=$basedir/operators
 config_file_input=$1; shift
 ocp_release=$1; shift
 
+fetch_archs(){
+  client_arch=$(uname -m)
+  if [ "$client_arch" == "aarch64" ]; then
+    client_arch="arm64"
+  fi
+  if [ "$client_arch" == "x86_64" ]; then
+    client_arch="amd64"
+  fi
+
+  ocp_arch=$client_arch
+
+  if [ "$ocp_arch" == "arm64" ]; then
+    release_arch="aarch64"
+  elif [ "$ocp_arch" == "amd64" ]; then
+    release_arch="x86_64"
+  fi
+
+  installer_os="linux"
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    installer_os="mac"
+  fi
+}
+
+is_gzipped(){
+  local file=$1
+  if file "$file" | grep -q 'gzip'; then
+    echo 1
+  else
+    echo 0
+  fi
+}
+
+fetch_archs
+
 if [ -z "$config_file_input" ]
 then
   config_file=config.yaml
@@ -70,7 +104,7 @@ then
   ocp_release='stable-4.12'
 fi
 
-ocp_release_version=$(curl -s https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/${ocp_release}/release.txt | grep 'Version:' | awk -F ' ' '{print $2}')
+ocp_release_version=$(curl -s https://mirror.openshift.com/pub/openshift-v4/${release_arch}/clients/ocp/${ocp_release}/release.txt | grep 'Version:' | awk -F ' ' '{print $2}')
 
 #if release not available on mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/, probably ec (early candidate) version.
 if [ -z $ocp_release_version ]; then
@@ -101,28 +135,46 @@ else
 fi
 echo "Will use $config_file as the configuration in other mno-* scripts."
 
-if [ ! -f $basedir/openshift-install-linux.$ocp_release_version.tar.gz ]; then
+openshift_install_tar_file=openshift-install-${installer_os}-${client_arch}.${ocp_release_version}.tar.gz
+openshift_mirror_path=https://mirror.openshift.com/pub/openshift-v4/${release_arch}/clients/ocp/${ocp_release_version}
+
+if [ ! -f $basedir/$openshift_install_tar_file ]; then
   echo "You are going to download OpenShift installer $ocp_release: ${ocp_release_version}"
   echo
-  status_code=$(curl -s -o /dev/null -w "%{http_code}" https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/$ocp_release_version/)
+  status_code=$(curl --connect-timeout 10 -s -o /dev/null -w "%{http_code}" ${openshift_mirror_path}/)
   if [ $status_code = "200" ]; then
-    curl -L https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/${ocp_release_version}/openshift-install-linux.tar.gz -o $basedir/openshift-install-linux.$ocp_release_version.tar.gz
-    if [[ $? -eq 0 ]]; then
-      tar zxf $basedir/openshift-install-linux.$ocp_release_version.tar.gz -C $basedir openshift-install
+    curl -L ${openshift_mirror_path}/openshift-install-${installer_os}-${client_arch}.tar.gz -o $basedir/$openshift_install_tar_file
+    if [[ $(is_gzipped $basedir/$openshift_install_tar_file) -eq 1 ]]; then
+      info "Downloaded installer" "openshift-install-${installer_os}-${client_arch}.tar.gz"
     else
-      rm -f $basedir/openshift-install-linux.$ocp_release_version.tar.gz
-      exit -1
+      rm -f $basedir/$openshift_install_tar_file
+      curl -L ${openshift_mirror_path}/openshift-install-${installer_os}.tar.gz -o $basedir/$openshift_install_tar_file
+      if [[ $(is_gzipped $basedir/$openshift_install_tar_file) -eq 1 ]]; then
+        info "Downloaded installer" "openshift-install-${installer_os}.tar.gz"
+      else
+        rm -f $basedir/$openshift_install_tar_file
+      fi
     fi
-  else
+
+    if [ -f $basedir/$openshift_install_tar_file ]; then
+      tar zxf $basedir/$openshift_install_tar_file -C $basedir openshift-install
+    fi
+  fi
+
+  if [ ! -f $basedir/openshift-install ]; then
     #fetch from image
+    local extract_os="linux"
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+      extract_os="mac"
+    fi
     if [[ $ocp_release == *"nightly"* ]] || [[ $ocp_release == *"ci"* ]]; then
-      oc adm release extract --command=openshift-install registry.ci.openshift.org/ocp/release:$ocp_release_version --registry-config=$(yq '.pull_secret' $config_file) --to="$basedir"
+      oc adm release extract --command-os=${extract_os}/${client_arch} --command=openshift-install registry.ci.openshift.org/ocp/release:$ocp_release_version --registry-config=$(yq '.pull_secret' $config_file) --to="$basedir"
     else
-      oc adm release extract --command=openshift-install quay.io/openshift-release-dev/ocp-release:$ocp_release_version-x86_64 --registry-config=$(yq '.pull_secret' $config_file) --to="$basedir"
+      oc adm release extract --command-os=${extract_os}/${client_arch} --command=openshift-install quay.io/openshift-release-dev/ocp-release:$ocp_release_version-${release_arch} --registry-config=$(yq '.pull_secret' $config_file) --to="$basedir"
     fi
   fi
 else
-  tar zxf $basedir/openshift-install-linux.$ocp_release_version.tar.gz -C $basedir openshift-install
+  tar zxf $basedir/$openshift_install_tar_file -C $basedir openshift-install
 fi
 
 enable_crun(){
@@ -171,7 +223,7 @@ install_operators(){
 apply_extra_manifests(){
   if [ -d $basedir/extra-manifests ]; then
     echo "Copy customized CRs from extra-manifests folder if present"
-    find $basedir/extra-manifests/day1/ -type f \( -name "*.yaml" -o -name "*.yaml.j2" \) -printf ' - %P\n'
+    find $basedir/extra-manifests/day1/ -type f \( -name "*.yaml" -o -name "*.yaml.j2" \) | sed "s|$basedir/extra-manifests/day1/| - |"
     cp $basedir/extra-manifests/day1/*.yaml $cluster_workspace/openshift/ 2>/dev/null
 
     #render j2 files
@@ -282,6 +334,6 @@ echo "kubeadmin password: $cluster_workspace/auth/kubeadmin-password."
 echo "------------------------------------------------"
 
 echo
-echo "Next step: Go to your BMC console and boot the node from ISO: $cluster_workspace/agent.x86_64.iso."
+echo "Next step: Go to your BMC console and boot the node from ISO: $cluster_workspace/agent.${release_arch}.iso."
 echo "You can also run ./mno-install.sh to boot the node from the image automatically if you have a HTTP server serves the image."
 echo "Enjoy!"

@@ -239,7 +239,7 @@ config_day2_operators() {
       op_workspace=$cluster_workspace/day2/${op_name}
       if [[ "true" == $(yq ".day1.operators.$op_name.enabled" $config_file) ]]; then
         info "$op_desc day2:" "enabled"
-        readarray -t files < <(find $op_manifest -type f -printf "%f\n")
+        readarray -t files < <(find $op_manifest -type f -exec basename {} \;)
         for ((i=0; i<${#files[@]}; i++)); do
           file="${files[$i]}"
           mkdir -p $op_workspace
