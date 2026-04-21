@@ -46,19 +46,6 @@ networking:
   {% endif -%}
   {% if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled -%}
   - cidr: {{ hosts.common.ipv6.machine_network_cidr }}
-  {% endif -%}
-  {% if hosts.workers is defined -%}
-  {%- set seen = [] -%}
-  {%- for host in hosts.workers -%}
-  {%- if host.ipv4 is defined and host.ipv4.machine_network_cidr is defined and host.ipv4.machine_network_cidr != hosts.common.ipv4.machine_network_cidr and host.ipv4.machine_network_cidr not in seen -%}
-  {%- if seen.append(host.ipv4.machine_network_cidr) -%}{%- endif %}
-  - cidr: {{ host.ipv4.machine_network_cidr }}
-  {% endif -%}
-  {%- if host.ipv6 is defined and host.ipv6.machine_network_cidr is defined and host.ipv6.machine_network_cidr != hosts.common.ipv6.machine_network_cidr and host.ipv6.machine_network_cidr not in seen -%}
-  {%- if seen.append(host.ipv6.machine_network_cidr) -%}{%- endif %}
-  - cidr: {{ host.ipv6.machine_network_cidr }}
-  {% endif -%}
-  {%- endfor -%}
   {% endif %}
 platform:
   baremetal:
