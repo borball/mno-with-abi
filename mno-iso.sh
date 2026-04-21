@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # 
 # Helper script to generate bootable ISO with OpenShift agent based installer
 # usage: ./mno-iso.sh -h
@@ -69,7 +69,16 @@ fetch_archs(){
     client_arch="amd64"
   fi
 
-  ocp_arch=$client_arch
+  ocp_arch=$(yq '.cluster.platform' $config_file_input)
+  if [ -z "$ocp_arch" ] || [ "$ocp_arch" == "null" ]; then
+    ocp_arch=$client_arch
+  fi
+
+  if [ "$ocp_arch" == "arm" ]; then
+    ocp_arch="arm64"
+  elif [ "$ocp_arch" == "amd" ] || [ "$ocp_arch" == "intel" ]; then
+    ocp_arch="amd64"
+  fi
 
   if [ "$ocp_arch" == "arm64" ]; then
     release_arch="aarch64"
@@ -135,7 +144,7 @@ else
 fi
 echo "Will use $config_file as the configuration in other mno-* scripts."
 
-openshift_install_tar_file=openshift-install-${installer_os}-${client_arch}.${ocp_release_version}.tar.gz
+openshift_install_tar_file=openshift-install-client-${client_arch}-target-${ocp_arch}.${ocp_release_version}.tar.gz
 openshift_mirror_path=https://mirror.openshift.com/pub/openshift-v4/${release_arch}/clients/ocp/${ocp_release_version}
 
 if [ ! -f $basedir/$openshift_install_tar_file ]; then

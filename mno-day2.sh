@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # 
 # Helper script to apply the day2 operations
 # Usage: ./mno-day2.sh cluster

@@ -74,7 +74,7 @@ hosts:
             {% if not hosts.common.ipv4.dhcp -%}
             address:
               - ip: {{ host.ipv4.ip }}
-                prefix-length: {{ hosts.common.ipv4.machine_network_prefix }}
+                prefix-length: {{ host.ipv4.machine_network_prefix or hosts.common.ipv4.machine_network_prefix }}
             {% endif -%}
             dhcp: {{ hosts.common.ipv4.dhcp|lower }}
           {%- else %}
@@ -87,7 +87,7 @@ hosts:
             {% if not hosts.common.ipv6.dhcp -%}
             address:
               - ip: {{ host.ipv6.ip }}
-                prefix-length: {{ hosts.common.ipv6.machine_network_prefix }}
+                prefix-length: {{ host.ipv6.machine_network_prefix or hosts.common.ipv6.machine_network_prefix }}
             {% endif -%}
             dhcp: {{ hosts.common.ipv6.dhcp|lower }}
           {%- else %}
@@ -134,16 +134,16 @@ hosts:
         config:
           server:
             {%- if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled %}
-            - {{ hosts.common.ipv4.dns }}
+            - {{ host.ipv4.dns or hosts.common.ipv4.dns }}
             {%- endif %}
             {%- if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled %}
-            - {{ hosts.common.ipv6.dns }}
+            - {{ host.ipv6.dns or hosts.common.ipv6.dns }}
             {%- endif %}
       routes:
         config:
           {%- if hosts.common.ipv4 is defined and hosts.common.ipv4.enabled %}
           - destination: 0.0.0.0/0
-            next-hop-address: {{ hosts.common.ipv4.gateway }}
+            next-hop-address: {{ host.ipv4.gateway or hosts.common.ipv4.gateway }}
             {%- if hosts.common.vlan is defined and hosts.common.vlan.enabled %}
             next-hop-interface: {{ hosts.common.vlan.name }}
             {%- else %}
@@ -153,7 +153,7 @@ hosts:
           {%- endif -%}
           {%- if hosts.common.ipv6 is defined and hosts.common.ipv6.enabled %}
           - destination: ::/0
-            next-hop-address: {{ hosts.common.ipv6.gateway }}
+            next-hop-address: {{ host.ipv6.gateway or hosts.common.ipv6.gateway }}
             {% if hosts.common.vlan is defined and hosts.common.vlan.enabled -%}
             next-hop-interface: {{ hosts.common.vlan.name }}
             {%- else %}

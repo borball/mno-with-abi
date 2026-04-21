@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Helper script to boot the node via redfish API from the ISO image
 # usage: ./mno-install.sh cluster 
 #
